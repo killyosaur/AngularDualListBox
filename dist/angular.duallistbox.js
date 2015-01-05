@@ -1,4 +1,11 @@
-﻿'use strict';
+﻿/**
+ * angular.duallistbox
+ * @version v0.0.2 - 2014-12-29
+ * @author Michael Walker (killyosaur@hotmail.com)
+ * @link https://github.com/killyosaur/angularduallistbox
+ * @license Creative Commons Attribution-ShareAlike 4.0 International License
+**/
+'use strict';
 angular.module('killyosaur.dualListBox', [])
 .run(["$templateCache", function ($templateCache) {
     $templateCache.put("template/duallistbox/boxes.html",
