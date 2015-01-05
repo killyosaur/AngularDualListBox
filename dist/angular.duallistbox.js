@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.2 - 2014-12-29
+ * @version v0.0.3 - 2015-01-05
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -76,6 +76,12 @@ angular.module('killyosaur.dualListBox', [])
                     }
                 }
 
+				if (attributes.ngChange) {
+					ngModelCtrl.$viewChangeListeners.push(function() {
+						scope.$eval(attrs.ngChange);
+					});
+				}
+				
                 //model -> UI
                 ngModelCtrl.$render = function () {
                     scope.destinationData = ngModelCtrl.$viewValue;
