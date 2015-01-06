@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.4 - 2015-01-06
+ * @version v0.0.5 - 2015-01-06
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -24,7 +24,7 @@ angular.module('killyosaur.dualListBox', [])
     <div class=\"col-md-6\">\
         <h4><span>{{options.destinationTitle}}</span><small> - showing {{destinationFiltered.length ? destinationFiltered.length : 0}}</small></h4>\
         <input style=\"margin-bottom: 5px;\" class=\"filter form-control\" type=\"text\" ng-model=\"destinationFilter\" placeholder=\"Filter\" />\
-        <button dat-type=\"stl\" class=\"btn btn-default \" ng-class=\"{'col-md-6': options.moveAllBtn, 'col-md-12': !options.moveAllBtn}\"style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"!destinationSelectedData.length || destinationSelectedData.length == 0\">\
+        <button data-type=\"stl\" class=\"btn btn-default \" ng-class=\"{'col-md-6': options.moveAllBtn, 'col-md-12': !options.moveAllBtn}\"style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"!destinationSelectedData.length || destinationSelectedData.length == 0\">\
             <span class=\"glyphicon glyphicon-chevron-left\"></span>\
         </button>\
         <button ng-show=\"options.moveAllBtn\" data-type=\"atl\" class=\"btn btn-default col-md-6 pull-right\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"!destinationFiltered || destinationFiltered.length == 0\">\
@@ -40,7 +40,7 @@ angular.module('killyosaur.dualListBox', [])
     '$timeout',
     '$filter',
 	'$http',
-    function ($compile, $timeout, $filter, $http) {
+    function ($compile, $timeout, $filter) {
         return {
             restrict: 'AE',
             require: '^ngModel',
@@ -76,41 +76,25 @@ angular.module('killyosaur.dualListBox', [])
                     }
                 }
 
-                if (angular.isDefined(scope.source) && angular.isArray(scope.source)) {
-                    angular.forEach(scope.source, function (datum) {
-                        scope.sourceData.push(datum);
-                    });
-                } else if (angular.isDefined(scope.source) && angular.isFunction(scope.source)) {
-                    angular.forEach(scope.source(), function (datum) {
-                        scope.sourceData.push(datum);
-                    });
-                } else if (angular.isDefined(scope.source) && angular.isString(scope.source)) {
-                    $http.get(scope.source)
-                        .success(function (data) {
-                            angular.forEach(data, function (datum) {
-                                scope.sourceData.push(datum);
-                            });
-                        })
-				        .error(function (error) {
-				            throw error;
-				        });
-                } else {
-                    throw 'No valid data source available!';
-                }
-
-                if (attributes.ngChange) {
-                    ngModelCtrl.$viewChangeListeners.push(function () {
-                        scope.$eval(attrs.ngChange);
-                    });
-                }
+                ngModelCtrl.$viewChangeListeners.push(function () {
+                    scope.$eval(attributes.ngChange);
+                });
 
                 //model -> UI
                 ngModelCtrl.$render = function () {
                     scope.destinationData = ngModelCtrl.$viewValue;
                 };
 
-                scope.$watch('destinationData', function () {
-                    if (angular.isDefined(scope.destinationData) && scope.destinationData.length > 0) {
+                scope.$watch('destinationData', function (newDestData) {
+                    if (angular.isDefined(scope.source) && angular.isArray(scope.source)) {
+                        angular.forEach(scope.source, function (datum) {
+                            if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1)
+                                scope.sourceData.push(datum);
+                        });
+                    } else {
+                        throw 'No valid data source available!';
+                    }
+                    if (angular.isDefined(scope.destinationData)) {
                         angular.forEach(scope.destinationData, function (datum) {
                             var index = scope.sourceData.indexOf(datum);
                             if (index > -1)
@@ -119,30 +103,41 @@ angular.module('killyosaur.dualListBox', [])
                     }
                 });
 
+                function getIndex(data, item) {
+                    var index = -1;
+                    angular.forEach(data, function (datum, i) {
+                        if (angular.toJson(datum) === angular.toJson(item)) {
+                            index = i;
+                        }
+                    });
+
+                    return index;
+                }
+
                 scope.move = function (event) {
                     event.preventDefault();
                     var button = event.currentTarget;
-                    var dataType = button.getAttribute('data-type');
-                    var modelData = scope.destinationData;
-                    switch (dataType) {
+                    $timeout(function () {
+                        var dataType = button.getAttribute('data-type');
+                        var modelData = scope.destinationData;
+                        switch (dataType) {
                         case 'atr':
                             if (scope.sourceData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
                                 scope.sourceData.length < scope.options.maxAllBtn) {
-                                $timeout(function () {
-                                    modelData = modelData ? modelData.concat(scope.sourceData) : scope.sourceData;
-                                }, options.timeout);
+                                modelData = modelData ? modelData.concat(scope.sourceData) : scope.sourceData;
+                                if (scope.sourceSelectedData) {
+                                    scope.sourceSelectedData.length = 0;
+                                }
                             }
                             break;
                         case 'atl':
                             if (modelData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
                                 modelData.length < scope.options.maxAllBtn) {
-                                $timeout(function () {
-                                    scope.sourceData = scope.sourceData.concat(modelData);
-                                    modelData.splice(0);
-                                }, scope.options.timeout);
-                            }
-                            if (modelData.length > 0) {
-                                throw 'Move timed out before operation could complete';
+                                scope.sourceData = scope.sourceData.concat(modelData);
+                                modelData.splice(0);
+                                if (scope.destinationSelectedData) {
+                                    scope.destinationSelectedData.length = 0;
+                                }
                             }
                             break;
                         case 'str':
@@ -150,15 +145,16 @@ angular.module('killyosaur.dualListBox', [])
                             break;
                         case 'stl':
                             scope.sourceData = scope.sourceData.concat(scope.destinationSelectedData);
-                            angular.forEach(scope.destinationSelectedData, function (datum) {
-                                var index = scope.destinationData.indexOf(datum);
+                            angular.forEach(scope.destinationSelectedData, function(datum) {
+                                var index = getIndex(scope.destinationData, datum);
                                 modelData.splice(index, 1);
                             });
                             break;
-                    }
+                        }
 
-                    ngModelCtrl.$setViewValue(modelData);
-                    ngModelCtrl.$render();
+                        ngModelCtrl.$setViewValue(modelData);
+                        ngModelCtrl.$render();
+                    }, scope.options.timeout);
                 };
 
                 scope.filterBy = function (filterValue) {

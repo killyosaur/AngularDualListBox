@@ -1,5 +1,9 @@
 ﻿angular.module("myApp", ["killyosaur.dualListBox"])
 .controller("myController", function ($scope) {
+    $scope.test2 = 'test';
+    $scope.change = function() {
+        alert($scope.testModel.length);
+    }
     $scope.jsonObject = [
     {
         "index": 0,
@@ -5965,6 +5969,44 @@
         "company": "Talae",
         "email": "roxiecurtis@talae.com"
     },
+    {
+        "index": 994,
+        "name": "Elba Logan",
+        "company": "Polarium",
+        "email": "elbalogan@polarium.com"
+    },
+    {
+        "index": 995,
+        "name": "Aimee Norman",
+        "company": "Endipine",
+        "email": "aimeenorman@endipine.com"
+    },
+    {
+        "index": 996,
+        "name": "Manuela Holt",
+        "company": "Surelogic",
+        "email": "manuelaholt@surelogic.com"
+    },
+    {
+        "index": 997,
+        "name": "Avis Butler",
+        "company": "Portaline",
+        "email": "avisbutler@portaline.com"
+    },
+    {
+        "index": 998,
+        "name": "Oconnor Briggs",
+        "company": "Enquility",
+        "email": "oconnorbriggs@enquility.com"
+    },
+    {
+        "index": 999,
+        "name": "Lynch Cruz",
+        "company": "Liquidoc",
+        "email": "lynchcruz@liquidoc.com"
+    }
+    ];
+    $scope.testModel = [
     {
         "index": 994,
         "name": "Elba Logan",
