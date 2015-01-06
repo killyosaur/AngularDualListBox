@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.3 - 2015-01-05
+ * @version v0.0.4 - 2015-01-06
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -39,19 +39,20 @@ angular.module('killyosaur.dualListBox', [])
     '$compile',
     '$timeout',
     '$filter',
-    function ($compile, $timeout, $filter) {
+	'$http',
+    function ($compile, $timeout, $filter, $http) {
         return {
             restrict: 'AE',
             require: '^ngModel',
-            scope: { sourceData: "=" },
+            scope: { source: '=' },
             replace: true,
             templateUrl: "template/duallistbox/boxes.html",
             link: function (scope, element, attributes, ngModelCtrl) {
                 scope.sourceFilter = "";
                 scope.destinationFilter = "";
                 scope.destinationData = [];
+                scope.sourceData = [];
                 scope.options = {
-                    uri: '',                            // JSON file that can be opened for the data.
                     text: 'name',                       // Text that is assigned to the option field.
                     sourceTitle: 'Available Items',     // Title of the source list of the dual list box.
                     destinationTitle: 'Selected Items', // Title of the destination list of the dual list box.
@@ -68,20 +69,41 @@ angular.module('killyosaur.dualListBox', [])
                 if (attributes.height) {
                     scope.selectionBoxStyle.height = attributes.height;
                 }
+
                 for (var i in scope.options) {
-                    if (i == "uri" && attributes.source) {
-                        scope.options.uri = attributes.source;
-                    } else if(attributes[i]) {
+                    if (attributes[i]) {
                         scope.options[i] = attributes[i];
                     }
                 }
 
-				if (attributes.ngChange) {
-					ngModelCtrl.$viewChangeListeners.push(function() {
-						scope.$eval(attrs.ngChange);
-					});
-				}
-				
+                if (angular.isDefined(scope.source) && angular.isArray(scope.source)) {
+                    angular.forEach(scope.source, function (datum) {
+                        scope.sourceData.push(datum);
+                    });
+                } else if (angular.isDefined(scope.source) && angular.isFunction(scope.source)) {
+                    angular.forEach(scope.source(), function (datum) {
+                        scope.sourceData.push(datum);
+                    });
+                } else if (angular.isDefined(scope.source) && angular.isString(scope.source)) {
+                    $http.get(scope.source)
+                        .success(function (data) {
+                            angular.forEach(data, function (datum) {
+                                scope.sourceData.push(datum);
+                            });
+                        })
+				        .error(function (error) {
+				            throw error;
+				        });
+                } else {
+                    throw 'No valid data source available!';
+                }
+
+                if (attributes.ngChange) {
+                    ngModelCtrl.$viewChangeListeners.push(function () {
+                        scope.$eval(attrs.ngChange);
+                    });
+                }
+
                 //model -> UI
                 ngModelCtrl.$render = function () {
                     scope.destinationData = ngModelCtrl.$viewValue;
@@ -117,7 +139,7 @@ angular.module('killyosaur.dualListBox', [])
                                 $timeout(function () {
                                     scope.sourceData = scope.sourceData.concat(modelData);
                                     modelData.splice(0);
-                                }, options.timeout);
+                                }, scope.options.timeout);
                             }
                             if (modelData.length > 0) {
                                 throw 'Move timed out before operation could complete';
