@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.5 - 2015-01-06
+ * @version v0.0.6 - 2015-01-06
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -87,6 +87,7 @@ angular.module('killyosaur.dualListBox', [])
 
                 scope.$watch('destinationData', function (newDestData) {
                     if (angular.isDefined(scope.source) && angular.isArray(scope.source)) {
+                        scope.sourceData = [];
                         angular.forEach(scope.source, function (datum) {
                             if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1)
                                 scope.sourceData.push(datum);
@@ -121,35 +122,36 @@ angular.module('killyosaur.dualListBox', [])
                         var dataType = button.getAttribute('data-type');
                         var modelData = scope.destinationData;
                         switch (dataType) {
-                        case 'atr':
-                            if (scope.sourceData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
-                                scope.sourceData.length < scope.options.maxAllBtn) {
-                                modelData = modelData ? modelData.concat(scope.sourceData) : scope.sourceData;
-                                if (scope.sourceSelectedData) {
-                                    scope.sourceSelectedData.length = 0;
+                            case 'atr':
+                                if (scope.sourceData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
+                                    scope.sourceData.length < scope.options.maxAllBtn) {
+                                    modelData = modelData ? modelData.concat(scope.sourceData) : scope.sourceData;
+                                    if (scope.sourceSelectedData) {
+                                        scope.sourceSelectedData.length = 0;
+                                    }
                                 }
-                            }
-                            break;
-                        case 'atl':
-                            if (modelData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
-                                modelData.length < scope.options.maxAllBtn) {
-                                scope.sourceData = scope.sourceData.concat(modelData);
-                                modelData.splice(0);
-                                if (scope.destinationSelectedData) {
-                                    scope.destinationSelectedData.length = 0;
+                                break;
+                            case 'atl':
+                                if (modelData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
+                                    modelData.length < scope.options.maxAllBtn) {
+                                    scope.sourceData = scope.sourceData.concat(modelData);
+                                    modelData.splice(0);
+                                    if (scope.destinationSelectedData) {
+                                        scope.destinationSelectedData.length = 0;
+                                    }
                                 }
-                            }
-                            break;
-                        case 'str':
-                            modelData = modelData ? modelData.concat(scope.sourceSelectedData) : scope.sourceSelectedData;
-                            break;
-                        case 'stl':
-                            scope.sourceData = scope.sourceData.concat(scope.destinationSelectedData);
-                            angular.forEach(scope.destinationSelectedData, function(datum) {
-                                var index = getIndex(scope.destinationData, datum);
-                                modelData.splice(index, 1);
-                            });
-                            break;
+                                break;
+                            case 'str':
+                                modelData = modelData ? modelData.concat(scope.sourceSelectedData) : scope.sourceSelectedData;
+                                scope.sourceSelectedData.length = 0;
+                                break;
+                            case 'stl':
+                                angular.forEach(scope.destinationSelectedData, function (datum) {
+                                    var index = getIndex(scope.destinationData, datum);
+                                    modelData.splice(index, 1);
+                                });
+                                scope.destinationSelectedData.length = 0;
+                                break;
                         }
 
                         ngModelCtrl.$setViewValue(modelData);
