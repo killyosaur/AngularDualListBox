@@ -1,4 +1,11 @@
-﻿'use strict';
+﻿/**
+ * angular.duallistbox
+ * @version v0.0.7 - 2015-01-07
+ * @author Michael Walker (killyosaur@hotmail.com)
+ * @link https://github.com/killyosaur/angularduallistbox
+ * @license Creative Commons Attribution-ShareAlike 4.0 International License
+**/
+'use strict';
 angular.module('killyosaur.dualListBox', [])
 .run(["$templateCache", function ($templateCache) {
     $templateCache.put("template/duallistbox/boxes.html",
@@ -77,8 +84,10 @@ angular.module('killyosaur.dualListBox', [])
             var button = event.currentTarget;
             $timeout(function () {
                 var dataType = button.getAttribute('data-type');
-                var modelData = $scope.destinationData;
-                switch (dataType) {
+                var modelData = [];
+                modelData = modelData.concat($scope.destinationData);
+                $scope.$apply(function() {
+                    switch (dataType) {
                     case 'atr':
                         if ($scope.sourceData.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
                             $scope.sourceData.length < $scope.options.maxAllBtn) {
@@ -102,13 +111,14 @@ angular.module('killyosaur.dualListBox', [])
                         $scope.sourceSelectedData.length = 0;
                         break;
                     case 'stl':
-                        angular.forEach($scope.destinationSelectedData, function (datum) {
+                        angular.forEach($scope.destinationSelectedData, function(datum) {
                             var index = getIndex($scope.destinationData, datum);
                             modelData.splice(index, 1);
                         });
                         $scope.destinationSelectedData.length = 0;
                         break;
-                }
+                    }
+                });
 
                 ngModelCtrl.$setViewValue(modelData);
                 ngModelCtrl.$render();
