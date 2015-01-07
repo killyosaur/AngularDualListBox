@@ -10,10 +10,18 @@
     </head>
     <body>
         <div class="container" ng-controller="myController">
-            <div dual-list-box ng-model="testModel" source="jsonObject" ng-change="change()"></div>
-            <ul>
-                <li ng-repeat="test in testModel">{{test}}</li>
-            </ul>
-        </div>
+			<div class="row">
+				<div dual-list-box ng-model="testModel" source="jsonObject" ng-change="change()"></div>
+				<ul>
+					<li ng-repeat="test in testModel">{{test}}</li>
+				</ul>
+				<div class="row">
+					<div dual-list-box ng-model="testModel2" source="jsonObject" data-move-all-btn="false"></div>
+					<ul>
+						<li ng-repeat="test in testModel2">{{test}}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
     </body>
 </html>

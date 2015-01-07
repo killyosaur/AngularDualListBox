@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.7 - 2015-01-07
+ * @version v0.0.8 - 2015-01-07
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -100,7 +100,7 @@ angular.module('killyosaur.dualListBox', [])
                     case 'atl':
                         if (modelData.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
                             modelData.length < $scope.options.maxAllBtn) {
-                            modelData = null;
+                            modelData.splice(0);
                             if ($scope.destinationSelectedData) {
                                 $scope.destinationSelectedData.length = 0;
                             }
@@ -132,11 +132,19 @@ angular.module('killyosaur.dualListBox', [])
         };
     }
 ])
+.constant('dualListBoxConfig', {
+    text: 'name',                       // Text that is assigned to the option field.
+    sourceTitle: 'Available Items',     // Title of the source list of the dual list box.
+    destinationTitle: 'Selected Items', // Title of the destination list of the dual list box.
+    timeout: 500,                       // Timeout for when a filter search is started.
+    textLength: 45,                     // Maximum text length that is displayed in the select.
+    moveAllBtn: true,                   // Whether the append all button is available.
+    maxAllBtn: 500,                     // Maximum size of list in which the all button works without warning. See below.
+    warning: 'Are you sure you want to move this many items? Doing so can cause your browser to become unresponsive.'
+})
 .directive('dualListBox', [
-    '$compile',
-    '$timeout',
-    '$filter',
-    function ($compile, $timeout, $filter) {
+    'dualListBoxConfig',
+    function (dualListBoxConfig) {
         return {
             restrict: 'AE',
             require: ['^ngModel', '^dualListBox'],
@@ -150,28 +158,17 @@ angular.module('killyosaur.dualListBox', [])
                 scope.destinationFilter = "";
                 scope.destinationData = [];
                 scope.sourceData = [];
-                scope.options = {
-                    text: 'name',                       // Text that is assigned to the option field.
-                    sourceTitle: 'Available Items',     // Title of the source list of the dual list box.
-                    destinationTitle: 'Selected Items', // Title of the destination list of the dual list box.
-                    timeout: 500,                       // Timeout for when a filter search is started.
-                    textLength: 45,                     // Maximum text length that is displayed in the select.
-                    moveAllBtn: true,                   // Whether the append all button is available.
-                    maxAllBtn: 500,                     // Maximum size of list in which the all button works without warning. See below.
-                    warning: 'Are you sure you want to move this many items? Doing so can cause your browser to become unresponsive.'
-                };
+                scope.options = {};
                 scope.selectionBoxStyle = {
                     width: '100%',
                     height: '200px'
                 }
-                if (attributes.height) {
-                    scope.selectionBoxStyle.height = attributes.height;
+                if (angular.isDefined(attributes.height)) {
+                    scope.selectionBoxStyle.height = scope.$parent.$eval(attributes.height);
                 }
 
-                for (var i in scope.options) {
-                    if (attributes[i]) {
-                        scope.options[i] = attributes[i];
-                    }
+                for (var i in dualListBoxConfig) {
+                    scope.options[i] = angular.isDefined(attributes[i]) ? scope.$parent.$eval(attributes[i]) : dualListBoxConfig[i];
                 }
 
                 ngModelCtrl.$viewChangeListeners.push(function () {
