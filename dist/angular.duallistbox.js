@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.8 - 2015-01-07
+ * @version v0.0.9 - 2015-01-07
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -164,7 +164,7 @@ angular.module('killyosaur.dualListBox', [])
                     height: '200px'
                 }
                 if (angular.isDefined(attributes.height)) {
-                    scope.selectionBoxStyle.height = scope.$parent.$eval(attributes.height);
+                    scope.selectionBoxStyle.height = attributes.height;
                 }
 
                 for (var i in dualListBoxConfig) {
