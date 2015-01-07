@@ -1,11 +1,4 @@
-﻿/**
- * angular.duallistbox
- * @version v0.0.6 - 2015-01-06
- * @author Michael Walker (killyosaur@hotmail.com)
- * @link https://github.com/killyosaur/angularduallistbox
- * @license Creative Commons Attribution-ShareAlike 4.0 International License
-**/
-'use strict';
+﻿'use strict';
 angular.module('killyosaur.dualListBox', [])
 .run(["$templateCache", function ($templateCache) {
     $templateCache.put("template/duallistbox/boxes.html",
@@ -35,19 +28,114 @@ angular.module('killyosaur.dualListBox', [])
 </div>"
     );
 }])
+.controller('dualListBoxController', [
+    '$scope',
+    '$attrs',
+    '$timeout',
+    function ($scope, $attrs, $timeout) {
+        var self = this,
+            ngModelCtrl = { $setViewValue: angular.noop };
+
+        this.init = function (ngModelCtrl_) {
+            ngModelCtrl = ngModelCtrl_;
+
+            ngModelCtrl.$render = function () {
+                self.render();
+            };
+        }
+
+        //model -> UI
+        this.render = function () {
+            $scope.destinationData = ngModelCtrl.$modelValue;
+        };
+
+        $scope.$watch('destinationData', function (newDestData) {
+            if (angular.isDefined($scope.source) && angular.isArray($scope.source)) {
+                $scope.sourceData = [];
+                angular.forEach($scope.source, function (datum) {
+                    if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1)
+                        $scope.sourceData.push(datum);
+                });
+            } else {
+                throw 'No valid data source available!';
+            }
+        });
+
+        function getIndex(data, item) {
+            var index = -1;
+            angular.forEach(data, function (datum, i) {
+                if (angular.toJson(datum) === angular.toJson(item)) {
+                    index = i;
+                }
+            });
+
+            return index;
+        }
+
+        $scope.move = function (event) {
+            event.preventDefault();
+            var button = event.currentTarget;
+            $timeout(function () {
+                var dataType = button.getAttribute('data-type');
+                var modelData = $scope.destinationData;
+                switch (dataType) {
+                    case 'atr':
+                        if ($scope.sourceData.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
+                            $scope.sourceData.length < $scope.options.maxAllBtn) {
+                            modelData = modelData ? modelData.concat($scope.sourceData) : $scope.sourceData;
+                            if ($scope.sourceSelectedData) {
+                                $scope.sourceSelectedData.length = 0;
+                            }
+                        }
+                        break;
+                    case 'atl':
+                        if (modelData.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
+                            modelData.length < $scope.options.maxAllBtn) {
+                            modelData = null;
+                            if ($scope.destinationSelectedData) {
+                                $scope.destinationSelectedData.length = 0;
+                            }
+                        }
+                        break;
+                    case 'str':
+                        modelData = modelData ? modelData.concat($scope.sourceSelectedData) : $scope.sourceSelectedData;
+                        $scope.sourceSelectedData.length = 0;
+                        break;
+                    case 'stl':
+                        angular.forEach($scope.destinationSelectedData, function (datum) {
+                            var index = getIndex($scope.destinationData, datum);
+                            modelData.splice(index, 1);
+                        });
+                        $scope.destinationSelectedData.length = 0;
+                        break;
+                }
+
+                ngModelCtrl.$setViewValue(modelData);
+                ngModelCtrl.$render();
+            }, $scope.options.timeout);
+        };
+
+        $scope.filterBy = function (filterValue) {
+            var search = {};
+            search[$scope.options.text] = filterValue;
+            return search;
+        };
+    }
+])
 .directive('dualListBox', [
     '$compile',
     '$timeout',
     '$filter',
-	'$http',
     function ($compile, $timeout, $filter) {
         return {
             restrict: 'AE',
-            require: '^ngModel',
+            require: ['^ngModel', '^dualListBox'],
             scope: { source: '=' },
             replace: true,
             templateUrl: "template/duallistbox/boxes.html",
-            link: function (scope, element, attributes, ngModelCtrl) {
+            controller: 'dualListBoxController',
+            link: function (scope, element, attributes, ctrls) {
+                var ngModelCtrl = ctrls[0], duallistboxCtrl = ctrls[1];
                 scope.sourceFilter = "";
                 scope.destinationFilter = "";
                 scope.destinationData = [];
@@ -80,90 +168,7 @@ angular.module('killyosaur.dualListBox', [])
                     scope.$eval(attributes.ngChange);
                 });
 
-                //model -> UI
-                ngModelCtrl.$render = function () {
-                    scope.destinationData = ngModelCtrl.$viewValue;
-                };
-
-                scope.$watch('destinationData', function (newDestData) {
-                    if (angular.isDefined(scope.source) && angular.isArray(scope.source)) {
-                        scope.sourceData = [];
-                        angular.forEach(scope.source, function (datum) {
-                            if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1)
-                                scope.sourceData.push(datum);
-                        });
-                    } else {
-                        throw 'No valid data source available!';
-                    }
-                    if (angular.isDefined(scope.destinationData)) {
-                        angular.forEach(scope.destinationData, function (datum) {
-                            var index = scope.sourceData.indexOf(datum);
-                            if (index > -1)
-                                scope.sourceData.splice(index, 1);
-                        });
-                    }
-                });
-
-                function getIndex(data, item) {
-                    var index = -1;
-                    angular.forEach(data, function (datum, i) {
-                        if (angular.toJson(datum) === angular.toJson(item)) {
-                            index = i;
-                        }
-                    });
-
-                    return index;
-                }
-
-                scope.move = function (event) {
-                    event.preventDefault();
-                    var button = event.currentTarget;
-                    $timeout(function () {
-                        var dataType = button.getAttribute('data-type');
-                        var modelData = scope.destinationData;
-                        switch (dataType) {
-                            case 'atr':
-                                if (scope.sourceData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
-                                    scope.sourceData.length < scope.options.maxAllBtn) {
-                                    modelData = modelData ? modelData.concat(scope.sourceData) : scope.sourceData;
-                                    if (scope.sourceSelectedData) {
-                                        scope.sourceSelectedData.length = 0;
-                                    }
-                                }
-                                break;
-                            case 'atl':
-                                if (modelData.length >= scope.options.maxAllBtn && confirm(scope.options.warning) ||
-                                    modelData.length < scope.options.maxAllBtn) {
-                                    scope.sourceData = scope.sourceData.concat(modelData);
-                                    modelData.splice(0);
-                                    if (scope.destinationSelectedData) {
-                                        scope.destinationSelectedData.length = 0;
-                                    }
-                                }
-                                break;
-                            case 'str':
-                                modelData = modelData ? modelData.concat(scope.sourceSelectedData) : scope.sourceSelectedData;
-                                scope.sourceSelectedData.length = 0;
-                                break;
-                            case 'stl':
-                                angular.forEach(scope.destinationSelectedData, function (datum) {
-                                    var index = getIndex(scope.destinationData, datum);
-                                    modelData.splice(index, 1);
-                                });
-                                scope.destinationSelectedData.length = 0;
-                                break;
-                        }
-
-                        ngModelCtrl.$setViewValue(modelData);
-                        ngModelCtrl.$render();
-                    }, scope.options.timeout);
-                };
-
-                scope.filterBy = function (filterValue) {
-                    var search = {};
-                    search[scope.options.text] = filterValue;
-                    return search;
-                };
+                duallistboxCtrl.init(ngModelCtrl);
             }
         }
     }

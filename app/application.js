@@ -2,7 +2,11 @@
 .controller("myController", function ($scope) {
     $scope.test2 = 'test';
     $scope.change = function() {
-        alert($scope.testModel.length);
+		if ($scope.testModel) {
+			alert($scope.testModel.length);
+		} else {
+			alert('0');
+		}
     }
     $scope.jsonObject = [
     {
