@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.9 - 2015-01-07
+ * @version v0.0.10 - 2015-01-07
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -168,7 +168,7 @@ angular.module('killyosaur.dualListBox', [])
                 }
 
                 for (var i in dualListBoxConfig) {
-                    scope.options[i] = angular.isDefined(attributes[i]) ? scope.$parent.$eval(attributes[i]) : dualListBoxConfig[i];
+                    scope.options[i] = angular.isDefined(attributes[i]) ? angular.isString(dualListBoxConfig[i]) ? attributes[i] : scope.$parent.$eval(attributes[i]) : dualListBoxConfig[i];
                 }
 
                 ngModelCtrl.$viewChangeListeners.push(function () {
