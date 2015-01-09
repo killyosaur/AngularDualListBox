@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.10 - 2015-01-07
+ * @version v0.0.11 - 2015-01-09
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -13,10 +13,10 @@ angular.module('killyosaur.dualListBox', [])
     <div class=\"col-md-6\">\
         <h4><span>{{options.sourceTitle}}</span><small> - showing {{sourceFiltered.length}}</small></h4>\
         <input style=\"margin-bottom: 5px;\" class=\"filter form-control\" type=\"text\" ng-model=\"sourceFilter\" placeholder=\"Filter\" />\
-        <button ng-show=\"options.moveAllBtn\" data-type=\"atr\" class=\"btn btn-default col-md-6\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"sourceFiltered.length == 0\">\
+        <button ng-show=\"options.moveAllBtn\" data-type=\"atr\" class=\"btn btn-default col-md-6\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"isControlDisabled(sourceFiltered.length == 0)\">\
             <span class=\"glyphicon glyphicon-list\"></span><span class=\"glyphicon glyphicon-chevron-right\"></span>\
         </button>\
-        <button data-type=\"str\" class=\"btn btn-default \" ng-class=\"{'col-md-6 pull-right': options.moveAllBtn, 'col-md-12': !options.moveAllBtn}\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"!sourceSelectedData.length || sourceSelectedData.length == 0\">\
+        <button data-type=\"str\" class=\"btn btn-default \" ng-class=\"{'col-md-6 pull-right': options.moveAllBtn, 'col-md-12': !options.moveAllBtn}\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"isControlDisabled(!sourceSelectedData.length || sourceSelectedData.length == 0)\">\
             <span class=\"glyphicon glyphicon-chevron-right\"></span>\
         </button>\
         <select ng-style=\"selectionBoxStyle\" multiple=\"multiple\" ng-model=\"sourceSelectedData\" ng-options=\"item[options.text] for item in sourceFiltered = (sourceData | filter:filterBy(sourceFilter))\"></select>\
@@ -24,10 +24,10 @@ angular.module('killyosaur.dualListBox', [])
     <div class=\"col-md-6\">\
         <h4><span>{{options.destinationTitle}}</span><small> - showing {{destinationFiltered.length ? destinationFiltered.length : 0}}</small></h4>\
         <input style=\"margin-bottom: 5px;\" class=\"filter form-control\" type=\"text\" ng-model=\"destinationFilter\" placeholder=\"Filter\" />\
-        <button data-type=\"stl\" class=\"btn btn-default \" ng-class=\"{'col-md-6': options.moveAllBtn, 'col-md-12': !options.moveAllBtn}\"style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"!destinationSelectedData.length || destinationSelectedData.length == 0\">\
+        <button data-type=\"stl\" class=\"btn btn-default \" ng-class=\"{'col-md-6': options.moveAllBtn, 'col-md-12': !options.moveAllBtn}\"style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"isControlDisabled(!destinationSelectedData.length || destinationSelectedData.length == 0)\">\
             <span class=\"glyphicon glyphicon-chevron-left\"></span>\
         </button>\
-        <button ng-show=\"options.moveAllBtn\" data-type=\"atl\" class=\"btn btn-default col-md-6 pull-right\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"!destinationFiltered || destinationFiltered.length == 0\">\
+        <button ng-show=\"options.moveAllBtn\" data-type=\"atl\" class=\"btn btn-default col-md-6 pull-right\" style=\"margin-bottom: 5px;\" type=\"button\" ng-click=\"move($event)\" ng-disabled=\"isControlDisabled(!destinationFiltered || destinationFiltered.length == 0)\">\
             <span class=\"glyphicon glyphicon-chevron-left\"></span><span class=\"glyphicon glyphicon-list\"></span>\
         </button>\
         <select ng-style=\"selectionBoxStyle\" multiple=\"multiple\" ng-model=\"destinationSelectedData\" ng-options=\"item[options.text] for item in destinationFiltered = (destinationData | filter:filterBy(destinationFilter))\"></select>\
@@ -41,7 +41,12 @@ angular.module('killyosaur.dualListBox', [])
     '$timeout',
     function ($scope, $attrs, $timeout) {
         var self = this,
-            ngModelCtrl = { $setViewValue: angular.noop };
+            ngModelCtrl = { $setViewValue: angular.noop },
+            ngdisabled = false;
+
+        function controlDisabled() {
+            return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
+        }
 
         this.init = function (ngModelCtrl_) {
             ngModelCtrl = ngModelCtrl_;
@@ -56,12 +61,17 @@ angular.module('killyosaur.dualListBox', [])
             $scope.destinationData = ngModelCtrl.$modelValue;
         };
 
+        $attrs.$observe("disabled", function(disabled) {
+            ngdisabled = disabled;
+        });
+
         $scope.$watch('destinationData', function (newDestData) {
             if (angular.isDefined($scope.source) && angular.isArray($scope.source)) {
                 $scope.sourceData = [];
                 angular.forEach($scope.source, function (datum) {
-                    if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1)
+                    if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1) {
                         $scope.sourceData.push(datum);
+                    }
                 });
             } else {
                 throw 'No valid data source available!';
@@ -75,8 +85,11 @@ angular.module('killyosaur.dualListBox', [])
                     index = i;
                 }
             });
-
             return index;
+        }
+
+        $scope.isControlDisabled = function (standard) {
+            return (angular.isUndefined(standard) && controlDisabled()) || (standard || controlDisabled());
         }
 
         $scope.move = function (event) {
@@ -148,7 +161,10 @@ angular.module('killyosaur.dualListBox', [])
         return {
             restrict: 'AE',
             require: ['^ngModel', '^dualListBox'],
-            scope: { source: '=' },
+            scope: {
+                source: '=',
+                controlDisabled: '&'
+            },
             replace: true,
             templateUrl: "template/duallistbox/boxes.html",
             controller: 'dualListBoxController',
