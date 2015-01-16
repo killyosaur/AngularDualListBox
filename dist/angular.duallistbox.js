@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.11 - 2015-01-09
+ * @version v0.0.12 - 2015-01-16
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -102,18 +102,21 @@ angular.module('killyosaur.dualListBox', [])
                 $scope.$apply(function() {
                     switch (dataType) {
                     case 'atr':
-                        if ($scope.sourceData.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
-                            $scope.sourceData.length < $scope.options.maxAllBtn) {
-                            modelData = modelData ? modelData.concat($scope.sourceData) : $scope.sourceData;
+                        if ($scope.sourceFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
+                            $scope.sourceFiltered.length < $scope.options.maxAllBtn) {
+                            modelData = modelData.concat($scope.sourceFiltered);
                             if ($scope.sourceSelectedData) {
                                 $scope.sourceSelectedData.length = 0;
                             }
                         }
                         break;
                     case 'atl':
-                        if (modelData.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
-                            modelData.length < $scope.options.maxAllBtn) {
-                            modelData.splice(0);
+                        if ($scope.destinationFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
+                            $scope.destinationFiltered.length < $scope.options.maxAllBtn) {
+							angular.forEach($scope.destinationFiltered, function(datum) {
+								var index = getIndex(modelData, datum);
+								modelData.splice(index, 1);
+							});
                             if ($scope.destinationSelectedData) {
                                 $scope.destinationSelectedData.length = 0;
                             }
