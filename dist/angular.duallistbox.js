@@ -1,6 +1,6 @@
 ﻿/**
  * angular.duallistbox
- * @version v0.0.13 - 2015-02-11
+ * @version v0.0.14 - 2015-02-12
  * @author Michael Walker (killyosaur@hotmail.com)
  * @link https://github.com/killyosaur/angularduallistbox
  * @license Creative Commons Attribution-ShareAlike 4.0 International License
@@ -45,6 +45,25 @@ angular.module('killyosaur.dualListBox', [])
             ngModelCtrl = { $setViewValue: angular.noop },
             ngdisabled = false;
 
+        function grep(elems, callback, inv) {
+            var retVal,
+                ret = [],
+                i = 0,
+                length = elems.length;
+            inv = !!inv;
+
+            // Go through the array, only saving the items
+            // that pass the validator function
+            for ( ; i < length; i++ ) {
+                retVal = !!callback( elems[ i ], i );
+                if ( inv !== retVal ) {
+                    ret.push( elems[ i ] );
+                }
+            }
+
+            return ret;
+        }
+
         function controlDisabled() {
             return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
         }
@@ -62,35 +81,41 @@ angular.module('killyosaur.dualListBox', [])
             $scope.destinationData = ngModelCtrl.$modelValue;
         };
 
-        $attrs.$observe("disabled", function (disabled) {
+        $attrs.$observe("disabled", function(disabled) {
             ngdisabled = disabled;
         });
 
         $scope.$watch('destinationData', function (newDestData) {
-            if (angular.isDefined($scope.source) && angular.isArray($scope.source)) {
-                var i = 0, length = $scope.source.length;
-                $scope.sourceData = [];
-                for (; i < length; i++) {
-                    var datum = $scope.source[i];
-                    if (angular.isUndefined(newDestData) || getIndex(newDestData, datum) === -1) {
-                        $scope.sourceData.push(datum);
-                    }
+            updateSourceData(newDestData, $scope.source);
+        });
+
+        $scope.$watch('source', function (newSourceData) {
+            updateSourceData($scope.destinationData, newSourceData);
+        }, true);
+
+        function updateSourceData(destinationData, sourceData) {
+            if (angular.isDefined(sourceData) && angular.isArray(sourceData)) {
+                if (angular.isUndefined(destinationData) || destinationData.length == 0) {
+                    $scope.sourceData = [];
+                    $scope.sourceData = $scope.sourceData.concat(sourceData);
+                } else {
+                    $scope.sourceData = grep(sourceData, function(datum) {
+                        return getIndex(destinationData, datum) === -1;
+                    });
                 }
             } else {
                 throw 'No valid data source available!';
             }
-        });
+        }
 
         function getIndex(data, item) {
-            var index = -1, i = 0, length = data.length;
+            var i = 0, length = data.length;
             for (; i < length; i++) {
-                var datum = data[i];
-                if (angular.toJson(datum) === angular.toJson(item)) {
-                    index = i;
-                    break;
+                if (data[i][$scope.options.value] === item[$scope.options.value]) {
+                    return i;
                 }
             }
-            return index;
+            return -1;
         }
 
         $scope.isControlDisabled = function (standard) {
@@ -105,40 +130,40 @@ angular.module('killyosaur.dualListBox', [])
                 var dataType = button.getAttribute('data-type');
                 var modelData = [];
                 modelData = modelData.concat($scope.destinationData);
-                $scope.$apply(function () {
+                $scope.$apply(function() {
                     switch (dataType) {
-                        case 'atr':
-                            if ($scope.sourceFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
-                                $scope.sourceFiltered.length < $scope.options.maxAllBtn) {
-                                modelData = modelData.concat($scope.sourceFiltered);
-                                if ($scope.sourceSelectedData) {
-                                    $scope.sourceSelectedData.length = 0;
-                                }
+                    case 'atr':
+                        if ($scope.sourceFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
+                            $scope.sourceFiltered.length < $scope.options.maxAllBtn) {
+                            modelData = modelData.concat($scope.sourceFiltered);
+                            if ($scope.sourceSelectedData) {
+                                $scope.sourceSelectedData.length = 0;
                             }
-                            break;
-                        case 'atl':
-                            if ($scope.destinationFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
-                                $scope.destinationFiltered.length < $scope.options.maxAllBtn) {
-                                angular.forEach($scope.destinationFiltered, function (datum) {
-                                    var index = getIndex(modelData, datum);
-                                    modelData.splice(index, 1);
-                                });
-                                if ($scope.destinationSelectedData) {
-                                    $scope.destinationSelectedData.length = 0;
-                                }
+                        }
+                        break;
+                    case 'atl':
+                        if ($scope.destinationFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
+                            $scope.destinationFiltered.length < $scope.options.maxAllBtn) {
+							angular.forEach($scope.destinationFiltered, function(datum) {
+								var index = getIndex(modelData, datum);
+								modelData.splice(index, 1);
+							});
+                            if ($scope.destinationSelectedData) {
+                                $scope.destinationSelectedData.length = 0;
                             }
-                            break;
-                        case 'str':
-                            modelData = modelData ? modelData.concat($scope.sourceSelectedData) : $scope.sourceSelectedData;
-                            $scope.sourceSelectedData.length = 0;
-                            break;
-                        case 'stl':
-                            angular.forEach($scope.destinationSelectedData, function (datum) {
-                                var index = getIndex($scope.destinationData, datum);
-                                modelData.splice(index, 1);
-                            });
-                            $scope.destinationSelectedData.length = 0;
-                            break;
+                        }
+                        break;
+                    case 'str':
+                        modelData = modelData ? modelData.concat($scope.sourceSelectedData) : $scope.sourceSelectedData;
+                        $scope.sourceSelectedData.length = 0;
+                        break;
+                    case 'stl':
+                        angular.forEach($scope.destinationSelectedData, function(datum) {
+                            var index = getIndex($scope.destinationData, datum);
+                            modelData.splice(index, 1);
+                        });
+                        $scope.destinationSelectedData.length = 0;
+                        break;
                     }
                 });
 
@@ -158,7 +183,7 @@ angular.module('killyosaur.dualListBox', [])
 ])
 .constant('dualListBoxConfig', {
     text: 'name',                       // Text that is assigned to the option field.
-    //value: null,                        // Optional Value field, will create a standard list box by value.
+    value: 'id',                          // Optional Value field, will create a standard list box by value.
     sourceTitle: 'Available Items',     // Title of the source list of the dual list box.
     destinationTitle: 'Selected Items', // Title of the destination list of the dual list box.
     timeout: 500,                       // Timeout for when a filter search is started.
@@ -184,7 +209,8 @@ angular.module('killyosaur.dualListBox', [])
                 var ngModelCtrl = ctrls[0], duallistboxCtrl = ctrls[1];
                 scope.sourceFilter = "";
                 scope.destinationFilter = "";
-                scope.destinationData = [];
+                var modelLength = ngModelCtrl.$modelValue.length;
+                scope.destinationData = new Array(modelLength);
                 scope.sourceData = [];
                 scope.options = {};
                 scope.selectionBoxStyle = {
