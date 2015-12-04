@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="myApp">
+    <head>
+        <title></title>
+        <link data-require="bootstrap@*" data-semver="3.2.0" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.css" />
+        <script data-require="angular.js@*" data-semver="1.4.7" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>
+        <script src="scripts/angular.duallistbox.js"></script>
+        <script src="scripts/application.js"></script>
+    </head>
+    <body>
+        <div class="container" ng-controller="myController">
+			<div class="row">
+				<div dual-list-box ng-model="testModel" source="jsonObject" ng-change="change()"></div>
+				<ul>
+					<li ng-repeat="test in testModel">{{test}}</li>
+				</ul>
+			</div>
+			<div class="row">
+				<div dual-list-box ng-model="testModel2" source="jsonObject" data-move-all-btn="false" data-source-title="new source title" data-destination-title="new destination title"></div>
+				<ul>
+					<li ng-repeat="test in testModel2">{{test}}</li>
+				</ul>
+			</div>
+			<div class="row">
+				<div dual-list-box ng-model="testModel" source="jsonObject" ng-change="change()" control-disabled="true"></div>
+				<ul>
+					<li ng-repeat="test in testModel">{{test}}</li>
+				</ul>
+			</div>
+		</div>
+    </body>
+</html>

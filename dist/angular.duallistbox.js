@@ -1,4 +1,10 @@
-﻿/**
+/**
+ * AngularDualListBox - A dual selector box in the vein of the efficient dual list box built with jquery
+ * @version v0.0.15
+ * @link https://github.com/killyosaur/AngularDualListBox
+ * @license Creative Commons 4.0
+ */
+/**
  * angular.duallistbox
  * @version v0.0.14 - 2015-02-12
  * @author Michael Walker (killyosaur@hotmail.com)
