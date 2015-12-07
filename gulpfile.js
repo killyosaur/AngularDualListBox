@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var gutil = require('gulp-util');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var header = require('gulp-header');
@@ -47,16 +48,16 @@ gulp.task('default', ['scripts'], function(){
 });
 
 gulp.task('addpkg', ['scripts'], function(){
+	gutil.log('Adding new script now.')
 	return addPkg();
 });
 
 gulp.task('watch', function(){
-	var watcher = gulp.watch(SRC, ['scripts']);
+	var watcher = gulp.watch(SRC, ['addpkg']);
 	watcher.on('change', function(event) {
 		if (event.type === 'deleted') {
 			delete cached.caches.scripts[event.path];
 			remember.forget('scripts', event.path);
-			gulp.start('addpkg');
 		}
 	})
 });
@@ -104,6 +105,7 @@ gulp.task('serve', ['addpkg', 'watch'], function(){
 });
 
 function addPkg(){
+	
 	return gulp.src(TEMP + '*.js')
 		.pipe(gulp.dest(APP));
 }

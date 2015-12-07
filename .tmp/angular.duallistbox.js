@@ -26,6 +26,9 @@ app.directive('dualListBox', [
                 ngModelCtrl.$viewChangeListeners.push(function () {
                     scope.$eval(attributes.ngChange);
                 });
+    
+                var modelLength = ngModelCtrl.$modelValue.length;
+                duallistboxCtrl.destinationData = new Array(modelLength);
 
                 duallistboxCtrl.init(ngModelCtrl);
             }
@@ -80,9 +83,6 @@ app.controller('dualListBoxController', [
         self.init = function (ngModelCtrl_) {
             ngModelCtrl = ngModelCtrl_;
 
-            var modelLength = ngModelCtrl.$modelValue.length;
-            $scope.destinationData = new Array(modelLength);
-
             ngModelCtrl.$render = function () {
                 self.render();
             };
@@ -90,40 +90,35 @@ app.controller('dualListBoxController', [
 
         //model -> UI
         self.render = function () {
-            $scope.destinationData = ngModelCtrl.$modelValue;
+            self.destinationData = ngModelCtrl.$modelValue;
         };
 
-        $scope.sourceFilter = "";
-        $scope.destinationFilter = "";
-        $scope.sourceData = [];
-        $scope.options = {};
+        self.sourceFilter = "";
+        self.destinationFilter = "";
+        self.sourceData = [];
+        self.options = {};
         for (var i in dualListBoxConfig) {
-            $scope.options[i] = angular.isDefined($attrs[i]) ? 
+            self.options[i] = angular.isDefined($attrs[i]) ? 
                 angular.isString(dualListBoxConfig[i]) ? 
-                $attrs[i] : 
-                    $scope.$parent.$eval($attrs[i]) : 
-                    dualListBoxConfig[i];
+                    $attrs[i] : $scope.$parent.$eval($attrs[i])
+                : dualListBoxConfig[i];
         }
 
         $attrs.$observe("disabled", function(disabled) {
             ngdisabled = disabled;
         });
 
-        $scope.$watch('destinationData', function (newDestData) {
-            updateSourceData(newDestData, $scope.source);
+        $scope.$watchGroup([function() { return self.destinationData; }, function() { return $scope.source; }], function (newData) {
+            updateSourceData(newData[0], newData[1]);
         });
-
-        $scope.$watch('source', function (newSourceData) {
-            updateSourceData($scope.destinationData, newSourceData);
-        }, true);
 
         function updateSourceData(destinationData, sourceData) {
             if (angular.isDefined(sourceData) && angular.isArray(sourceData)) {
                 if (angular.isUndefined(destinationData) || destinationData.length == 0) {
-                    $scope.sourceData = [];
-                    $scope.sourceData = $scope.sourceData.concat(sourceData);
+                    self.sourceData = [];
+                    self.sourceData = self.sourceData.concat(sourceData);
                 } else {
-                    $scope.sourceData = grep(sourceData, function(datum) {
+                    self.sourceData = grep(sourceData, function(datum) {
                         return getIndex(destinationData, datum) === -1;
                     });
                 }
@@ -134,74 +129,97 @@ app.controller('dualListBoxController', [
 
         function getIndex(data, item) {
             var i = 0, length = data.length;
-            for (; i < length; i++) {
-                if (data[i][$scope.options.value] === item[$scope.options.value]) {
-                    return i;
+            if (!data || data.length === 0) return -1;
+            
+            if (item.hasOwnProperty(self.options.value)) {
+                for (; i < length; i++) {
+                    if (data[i][self.options.value] === item[self.options.value]) {
+                        return i;
+                    }
+                }
+            } else {
+                for (; i < length; i++) {
+                    var isEqual = false;
+                    for (var j in item) {
+                        if (data[i].hasOwnProperty(j) && item.hasOwnProperty(j)) {
+                            isEqual = data[i][j] === item[j];
+                        }
+                    }
+                    if(isEqual) {
+                        return i;
+                    }
                 }
             }
             return -1;
         }
 
-        $scope.isControlDisabled = function (standard) {
+        self.isControlDisabled = function (standard) {
             return (angular.isUndefined(standard) && controlDisabled()) || (standard || controlDisabled());
         }
 
-        $scope.move = function (event) {
+        self.move = function (event) {
             event.preventDefault();
             var deferred = $q.defer();
             var button = event.currentTarget;
             $timeout(function () {
                 var dataType = button.getAttribute('data-type');
                 var modelData = [];
-                modelData = modelData.concat($scope.destinationData);
-                $scope.$apply(function() {
-                    switch (dataType) {
-                    case 'atr':
-                        if ($scope.sourceFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
-                            $scope.sourceFiltered.length < $scope.options.maxAllBtn) {
-                            modelData = modelData.concat($scope.sourceFiltered);
-                            if ($scope.sourceSelectedData) {
-                                $scope.sourceSelectedData.length = 0;
-                            }
+                if(self.destinationData) {
+                    modelData = modelData.concat(self.destinationData);
+                }
+
+                switch (dataType) {
+                case 'atr':
+                    if (self.sourceFiltered.length >= self.options.maxAllBtn && confirm(self.options.warning) ||
+                        self.sourceFiltered.length < self.options.maxAllBtn) {
+                        modelData = modelData.concat(self.sourceFiltered);
+                        if (self.sourceSelectedData) {
+                            self.sourceSelectedData.length = 0;
                         }
-                        break;
-                    case 'atl':
-                        if ($scope.destinationFiltered.length >= $scope.options.maxAllBtn && confirm($scope.options.warning) ||
-                            $scope.destinationFiltered.length < $scope.options.maxAllBtn) {
-							angular.forEach($scope.destinationFiltered, function(datum) {
-								var index = getIndex(modelData, datum);
-								modelData.splice(index, 1);
-							});
-                            if ($scope.destinationSelectedData) {
-                                $scope.destinationSelectedData.length = 0;
-                            }
-                        }
-                        break;
-                    case 'str':
-                        modelData = modelData ? modelData.concat($scope.sourceSelectedData) : $scope.sourceSelectedData;
-                        $scope.sourceSelectedData.length = 0;
-                        break;
-                    case 'stl':
-                        angular.forEach($scope.destinationSelectedData, function(datum) {
-                            var index = getIndex($scope.destinationData, datum);
+                    }
+                    break;
+                case 'atl':
+                    if (self.destinationFiltered.length >= self.options.maxAllBtn && confirm(self.options.warning) ||
+                        self.destinationFiltered.length < self.options.maxAllBtn) {
+                        angular.forEach(self.destinationFiltered, function(datum) {
+                            var index = getIndex(modelData, datum);
                             modelData.splice(index, 1);
                         });
-                        $scope.destinationSelectedData.length = 0;
-                        break;
+                        if (self.destinationSelectedData) {
+                            self.destinationSelectedData.length = 0;
+                        }
                     }
-                });
+                    break;
+                case 'str':
+                    modelData = modelData ? modelData.concat(self.sourceSelectedData) : self.sourceSelectedData;
+                    self.sourceSelectedData.length = 0;
+                    break;
+                case 'stl':
+                    angular.forEach(self.destinationSelectedData, function(datum) {
+                        var index = getIndex(self.destinationData, datum);
+                        modelData.splice(index, 1);
+                    });
+                    self.destinationSelectedData.length = 0;
+                    break;
+                }
 
                 ngModelCtrl.$setViewValue(modelData);
                 ngModelCtrl.$render();
                 deferred.resolve(modelData);
-            }, $scope.options.timeout);
+            }, self.options.timeout);
             return deferred;
-        };
-
-        $scope.filterBy = function (filterValue) {
-            var search = {};
-            search[$scope.options.text] = filterValue;
-            return search;
         };
     }
 ]);
+app.filter('filterBy', ['$filter', function($filter){
+	return function(items, value, prop) {
+		var search = {};
+		if (prop) {
+			search[prop] = value;
+		} else {
+			search = value;
+		}
+		
+		return $filter('filter')(items, search);
+	}
+}]);

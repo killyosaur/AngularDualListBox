@@ -12,7 +12,7 @@
     <body>
         <div class="container" ng-controller="myController">
 			<div class="row">
-				<div dual-list-box ng-model="testModel" source="jsonObject" ng-change="change()"></div>
+				<div dual-list-box ng-model="testModel" source="jsonObject" ng-change="change()" data-value="index"></div>
 				<ul>
 					<li ng-repeat="test in testModel">{{test}}</li>
 				</ul>
