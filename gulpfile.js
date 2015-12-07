@@ -2,6 +2,13 @@ var gulp = require('gulp');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var header = require('gulp-header');
+var concat = require('gulp-concat');
+var footer = require('gulp-footer');
+var jshint = require('gulp-jshint');
+var cached = require('gulp-cached');
+var remember = require('gulp-remember');
+var minifyHtml = require('gulp-minify-html');
+var angularTemplatecache = require('gulp-angular-templatecache');
 var pkg = require('./package.json');
 var del = require('del');
 var browserSync = require('browser-sync');
@@ -12,32 +19,81 @@ var banner = ['/**',
   ' * @version v<%= pkg.version %>',
   ' * @link <%= pkg.homepage %>',
   ' * @license <%= pkg.license %>',
-  ' */',
-  ''].join('\n');
+  ' */'].join('\n');
 
 var DEST = 'dist/';
-var APP = 'app/scripts/'
+var APP = 'app/scripts/';
+var SRC = 'src/**/*.js';
+var TEMP = '.tmp/';
+
+gulp.task('clean-temp', function() {
+	return del([TEMP + '*']);
+});
 
 gulp.task('clean-dest', function() {
-	return del(['dist/*'])
+	return del([DEST + '*']);
 });
 
-gulp.task('default',['clean-dest'], function(){
-	return gulp.src('./src/angular.duallistbox.js')
-			.pipe(header(banner, { pkg: pkg }))
-			.pipe(gulp.dest(DEST))
-			.pipe(uglify())
-			.pipe(rename({ extname: '.min.js' }))
-			.pipe(header(banner, { pkg: pkg }))
-			.pipe(gulp.dest(DEST));
+gulp.task('default', ['scripts'], function(){
+	return gulp.src(TEMP + '*.js')
+		.pipe(concat('angular.duallistbox.js'))
+		.pipe(header(banner + '\n(function() {\n', { pkg: pkg }))
+		.pipe(footer('\n})();'))
+		.pipe(gulp.dest(DEST))
+		.pipe(uglify())
+		.pipe(rename({ extname: '.min.js' }))
+		.pipe(header(banner, { pkg: pkg }))
+		.pipe(gulp.dest(DEST));
 });
 
-gulp.task('addpkg', function(){
-	return gulp.src('./src/angular.duallistbox.js')
-			.pipe(gulp.dest(APP));
+gulp.task('addpkg', ['scripts'], function(){
+	return addPkg();
 });
 
-gulp.task('serve', ['addpkg'], function(){
+gulp.task('watch', function(){
+	var watcher = gulp.watch(SRC, ['scripts']);
+	watcher.on('change', function(event) {
+		if (event.type === 'deleted') {
+			delete cached.caches.scripts[event.path];
+			remember.forget('scripts', event.path);
+			gulp.start('addpkg');
+		}
+	})
+});
+
+gulp.task('templatecache', function() {
+	return gulp
+		.src('src/*.html')
+		.pipe(minifyHtml({empty: true}))
+		.pipe(angularTemplatecache(
+			'templates.js',
+			{
+				module: 'killyosaur.dualListBox',
+				root: 'templates/',
+				standalone: false,
+				transformUrl: function(url) {
+					return url.replace(/\.html$/, '');
+				}
+			}
+		))
+		.pipe(gulp.dest(TEMP));
+});
+
+gulp.task('scripts', ['clean-temp', 'clean-dest', 'templatecache'], function(){
+	return gulp.src(SRC)
+		.pipe(cached('scripts'))
+		.pipe(jshint())
+		.pipe(remember())
+		.pipe(concat('angular.duallistbox.js', 
+		   ['app.js',
+			'duallistbox.js',
+			'duallistboxConfig.js',
+			'duallistboxController.js',
+			'templates.js']))
+		.pipe(gulp.dest(TEMP));
+});
+
+gulp.task('serve', ['addpkg', 'watch'], function(){
 	browserSync({
 		server: {
 			baseDir: 'app'
@@ -45,4 +101,9 @@ gulp.task('serve', ['addpkg'], function(){
 	});
 	
 	gulp.watch(['*.html', 'scripts/**/*.js'], {cwd: 'app'}, reload);
-})
+});
+
+function addPkg(){
+	return gulp.src(TEMP + '*.js')
+		.pipe(gulp.dest(APP));
+}
