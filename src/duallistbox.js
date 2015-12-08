@@ -25,6 +25,9 @@ app.directive('dualListBox', [
                 ngModelCtrl.$viewChangeListeners.push(function () {
                     scope.$eval(attributes.ngChange);
                 });
+    
+                var modelLength = ngModelCtrl.$modelValue.length;
+                duallistboxCtrl.destinationData = new Array(modelLength);
 
                 duallistboxCtrl.init(ngModelCtrl);
             }

@@ -1,0 +1,26 @@
+{
+  "name": "Angular Duallistbox",
+  "description": "A dual selector box in the vein of the efficient dual list box built with jquery",
+  "main": "index.html",
+  "authors": [
+    "killyosaur"
+  ],
+  "license": "Creative Commons 4.0",
+  "keywords": [
+    "angular",
+    "select",
+    "box",
+    "filtered",
+    "dual"
+  ],
+  "homepage": "https://github.com/killyosaur/AngularDualListBox",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "spec"
+  ]
+}

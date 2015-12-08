@@ -12,10 +12,10 @@
             <span class="glyphicon glyphicon-chevron-right"></span>
         </button>
         <select ng-style="selectionBoxStyle" multiple="multiple" ng-model="dualListBox.sourceSelectedData" 
-				ng-options="item[dualListBox.options.text] for item in dualListBox.sourceFiltered = (dualListBox.sourceData | filter:dualListBox.filterBy(dualListBox.sourceFilter))"></select>
+				ng-options="item[dualListBox.options.text] for item in dualListBox.sourceFiltered = (dualListBox.sourceData | filterBy:dualListBox.sourceFilter:dualListBox.options.text)"></select>
     </div>
     <div class="col-md-6">
-        <h4><span>{{dualListBox.options.destinationTitle}}</span><small> - showing {{destinationFiltered.length ? destinationFiltered.length : 0}}</small></h4>
+        <h4><span>{{dualListBox.options.destinationTitle}}</span><small> - showing {{dualListBox.destinationFiltered.length || 0}}</small></h4>
         <input style="margin-bottom: 5px;" class="filter form-control" type="text" ng-model="dualListBox.destinationFilter" placeholder="Filter" />
         <button data-type="stl" class="btn btn-default " ng-class="{'col-md-6': dualListBox.options.moveAllBtn, 'col-md-12': !dualListBox.options.moveAllBtn}"
 				style="margin-bottom: 5px;" type="button" ng-click="dualListBox.move($event)" 
@@ -26,7 +26,7 @@
 				type="button" ng-click="dualListBox.move($event)" ng-disabled="dualListBox.isControlDisabled(!dualListBox.destinationFiltered || dualListBox.destinationFiltered.length == 0)">
             <span class="glyphicon glyphicon-chevron-left"></span><span class="glyphicon glyphicon-list"></span>
         </button>
-        <select ng-style="dualListBox.selectionBoxStyle" multiple="multiple" ng-model="dualListBox.destinationSelectedData" 
-				ng-options="item[dualListBox.options.text] for item in dualListBox.destinationFiltered = (dualListBox.destinationData | filter:dualListBox.filterBy(dualListBox.destinationFilter))"></select>
+        <select ng-style="selectionBoxStyle" multiple="multiple" ng-model="dualListBox.destinationSelectedData" 
+				ng-options="item[dualListBox.options.text] for item in dualListBox.destinationFiltered = (dualListBox.destinationData | filterBy:dualListBox.destinationFilter:dualListBox.options.text)"></select>
     </div>
 </div>

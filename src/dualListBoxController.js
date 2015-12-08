@@ -35,9 +35,6 @@ app.controller('dualListBoxController', [
         self.init = function (ngModelCtrl_) {
             ngModelCtrl = ngModelCtrl_;
 
-            var modelLength = ngModelCtrl.$modelValue.length;
-            self.destinationData = new Array(modelLength);
-
             ngModelCtrl.$render = function () {
                 self.render();
             };
@@ -63,13 +60,9 @@ app.controller('dualListBoxController', [
             ngdisabled = disabled;
         });
 
-        $scope.$watch('destinationData', function (newDestData) {
-            updateSourceData(newDestData, self.source);
+        $scope.$watchGroup([function() { return self.destinationData; }, function() { return $scope.source; }], function (newData) {
+            updateSourceData(newData[0], newData[1]);
         });
-
-        $scope.$watch('source', function (newSourceData) {
-            updateSourceData(self.destinationData, newSourceData);
-        }, true);
 
         function updateSourceData(destinationData, sourceData) {
             if (angular.isDefined(sourceData) && angular.isArray(sourceData)) {
@@ -77,7 +70,7 @@ app.controller('dualListBoxController', [
                     self.sourceData = [];
                     self.sourceData = self.sourceData.concat(sourceData);
                 } else {
-                    $scope.sourceData = grep(sourceData, function(datum) {
+                    self.sourceData = grep(sourceData, function(datum) {
                         return getIndex(destinationData, datum) === -1;
                     });
                 }
@@ -88,9 +81,25 @@ app.controller('dualListBoxController', [
 
         function getIndex(data, item) {
             var i = 0, length = data.length;
-            for (; i < length; i++) {
-                if (data[i][self.options.value] === item[self.options.value]) {
-                    return i;
+            if (!data || data.length === 0) return -1;
+            
+            if (item.hasOwnProperty(self.options.value)) {
+                for (; i < length; i++) {
+                    if (data[i][self.options.value] === item[self.options.value]) {
+                        return i;
+                    }
+                }
+            } else {
+                for (; i < length; i++) {
+                    var isEqual = false;
+                    for (var j in item) {
+                        if (data[i].hasOwnProperty(j) && item.hasOwnProperty(j)) {
+                            isEqual = data[i][j] === item[j];
+                        }
+                    }
+                    if(isEqual) {
+                        return i;
+                    }
                 }
             }
             return -1;
@@ -107,7 +116,9 @@ app.controller('dualListBoxController', [
             $timeout(function () {
                 var dataType = button.getAttribute('data-type');
                 var modelData = [];
-                modelData = modelData.concat(self.destinationData);
+                if(self.destinationData) {
+                    modelData = modelData.concat(self.destinationData);
+                }
 
                 switch (dataType) {
                 case 'atr':
@@ -149,12 +160,6 @@ app.controller('dualListBoxController', [
                 deferred.resolve(modelData);
             }, self.options.timeout);
             return deferred;
-        };
-
-        self.filterBy = function (filterValue) {
-            var search = {};
-            search[self.options.text] = filterValue;
-            return search;
         };
     }
 ]);
