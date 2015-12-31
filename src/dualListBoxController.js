@@ -1,4 +1,4 @@
-app.controller('dualListBoxController', [
+angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
     '$scope',
     '$attrs',
     '$timeout',

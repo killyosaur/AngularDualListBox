@@ -1,4 +1,4 @@
-app.filter('filterBy', ['$filter', function($filter){
+angular.module('killyosaur.dualListBox').filter('filterBy', ['$filter', function($filter){
 	return function(items, value, prop) {
 		var search = {};
 		if (prop) {

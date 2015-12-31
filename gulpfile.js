@@ -14,6 +14,7 @@ var pkg = require('./package.json');
 var del = require('del');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
+var Server = require('karma').Server;
 
 var banner = ['/**',
   ' * <%= pkg.name %> - <%= pkg.description %>',
@@ -26,6 +27,15 @@ var DEST = 'dist/';
 var APP = 'app/scripts/';
 var SRC = 'src/**/*.js';
 var TEMP = '.tmp/';
+
+gulp.task('test', ['templatecache'], function(done) {
+   new Server({
+       configFile: __dirname + '/karma.conf.js',
+       singleRun: true
+   }, function() {
+       done(); 
+   }).start();
+});
 
 gulp.task('clean-temp', function() {
 	return del([TEMP + '*']);
@@ -105,7 +115,6 @@ gulp.task('serve', ['addpkg', 'watch'], function(){
 });
 
 function addPkg(){
-	
 	return gulp.src(TEMP + '*.js')
 		.pipe(gulp.dest(APP));
 }

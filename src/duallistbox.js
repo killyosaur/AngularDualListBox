@@ -1,4 +1,4 @@
-app.directive('dualListBox', [
+angular.module('killyosaur.dualListBox').directive('dualListBox', [
     'dualListBoxConfig',
     function (dualListBoxConfig) {
         return {
