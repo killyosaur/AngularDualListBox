@@ -1,12 +1,13 @@
 /**
  * AngularDualListBox - A dual selector box in the vein of the efficient dual list box built with jquery
- * @version v0.0.15
+ * @version v0.0.16
  * @link https://github.com/killyosaur/AngularDualListBox
- * @license Creative Commons 4.0
+ * @license CC-BY-SA-4.0
  */
 (function() {
-var app = angular.module('killyosaur.dualListBox', []);
-app.directive('dualListBox', [
+/// <references path="../bower_components/angular/angular.js" />
+angular.module('killyosaur.dualListBox', []);
+angular.module('killyosaur.dualListBox').directive('dualListBox', [
     'dualListBoxConfig',
     function (dualListBoxConfig) {
         return {
@@ -37,12 +38,19 @@ app.directive('dualListBox', [
                 var modelLength = ngModelCtrl.$modelValue.length;
                 duallistboxCtrl.destinationData = new Array(modelLength);
 
-                duallistboxCtrl.init(ngModelCtrl);
+                ngModelCtrl.$render = function(){
+                    duallistboxCtrl.render(ngModelCtrl.$modelValue);
+                };
+                
+                scope.setViewValue = function(modelData){
+                    ngModelCtrl.$setViewValue(modelData);
+                    ngModelCtrl.$render();
+                }
             }
         }
     }
 ]);
-app.constant('dualListBoxConfig', {
+angular.module('killyosaur.dualListBox').constant('dualListBoxConfig', {
     text: 'name',                       // Text that is assigned to the option field.
     value: 'id',                          // Optional Value field, will create a standard list box by value.
     sourceTitle: 'Available Items',     // Title of the source list of the dual list box.
@@ -53,15 +61,13 @@ app.constant('dualListBoxConfig', {
     maxAllBtn: 500,                     // Maximum size of list in which the all button works without warning. See below.
     warning: 'Are you sure you want to move this many items? Doing so can cause your browser to become unresponsive.'
 });
-app.controller('dualListBoxController', [
+angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
     '$scope',
     '$attrs',
     '$timeout',
-    '$q',
     'dualListBoxConfig',
-    function ($scope, $attrs, $timeout, $q, dualListBoxConfig) {
+    function ($scope, $attrs, $timeout, dualListBoxConfig) {
         var self = this,
-            ngModelCtrl = { $setViewValue: angular.noop },
             ngdisabled = false;
 
         function grep(elems, callback, inv) {
@@ -87,17 +93,9 @@ app.controller('dualListBoxController', [
             return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
         }
 
-        self.init = function (ngModelCtrl_) {
-            ngModelCtrl = ngModelCtrl_;
-
-            ngModelCtrl.$render = function () {
-                self.render();
-            };
-        };
-
         //model -> UI
-        self.render = function () {
-            self.destinationData = ngModelCtrl.$modelValue;
+        self.render = function (modelValue) {
+            self.destinationData = modelValue;
         };
 
         self.sourceFilter = "";
@@ -166,7 +164,6 @@ app.controller('dualListBoxController', [
 
         self.move = function (event) {
             event.preventDefault();
-            var deferred = $q.defer();
             var button = event.currentTarget;
             $timeout(function () {
                 var dataType = button.getAttribute('data-type');
@@ -210,15 +207,12 @@ app.controller('dualListBoxController', [
                     break;
                 }
 
-                ngModelCtrl.$setViewValue(modelData);
-                ngModelCtrl.$render();
-                deferred.resolve(modelData);
+                $scope.setViewValue(modelData);
             }, self.options.timeout);
-            return deferred;
         };
     }
 ]);
-app.filter('filterBy', ['$filter', function($filter){
+angular.module('killyosaur.dualListBox').filter('filterBy', ['$filter', function($filter){
 	return function(items, value, prop) {
 		var search = {};
 		if (prop) {
