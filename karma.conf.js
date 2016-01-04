@@ -5,9 +5,11 @@ module.exports = function(config) {
         files: [
             'bower_components/angular/angular.min.js',
             'bower_components/angular-mocks/angular-mocks.js',
+            'bower_components/JSCheck/jscheck.js',
             'src/**/*.js',
             '.tmp/*.js',
-            'spec/**/*.js'
+            'spec/helpers/*.js',
+            'spec/*.js'
         ],
         
         reporters: ['progress', 'coverage'],

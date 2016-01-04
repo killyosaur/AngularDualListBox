@@ -2,11 +2,9 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
     '$scope',
     '$attrs',
     '$timeout',
-    '$q',
     'dualListBoxConfig',
-    function ($scope, $attrs, $timeout, $q, dualListBoxConfig) {
+    function ($scope, $attrs, $timeout, dualListBoxConfig) {
         var self = this,
-            ngModelCtrl = { $setViewValue: angular.noop },
             ngdisabled = false;
 
         function grep(elems, callback, inv) {
@@ -32,17 +30,9 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
             return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
         }
 
-        self.init = function (ngModelCtrl_) {
-            ngModelCtrl = ngModelCtrl_;
-
-            ngModelCtrl.$render = function () {
-                self.render();
-            };
-        };
-
         //model -> UI
-        self.render = function () {
-            self.destinationData = ngModelCtrl.$modelValue;
+        self.render = function (modelValue) {
+            self.destinationData = modelValue;
         };
 
         self.sourceFilter = "";
@@ -111,7 +101,6 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
 
         self.move = function (event) {
             event.preventDefault();
-            var deferred = $q.defer();
             var button = event.currentTarget;
             $timeout(function () {
                 var dataType = button.getAttribute('data-type');
@@ -155,11 +144,8 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
                     break;
                 }
 
-                ngModelCtrl.$setViewValue(modelData);
-                ngModelCtrl.$render();
-                deferred.resolve(modelData);
+                $scope.setViewValue(modelData);
             }, self.options.timeout);
-            return deferred;
         };
     }
 ]);

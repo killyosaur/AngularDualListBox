@@ -29,7 +29,14 @@ angular.module('killyosaur.dualListBox').directive('dualListBox', [
                 var modelLength = ngModelCtrl.$modelValue.length;
                 duallistboxCtrl.destinationData = new Array(modelLength);
 
-                duallistboxCtrl.init(ngModelCtrl);
+                ngModelCtrl.$render = function(){
+                    duallistboxCtrl.render(ngModelCtrl.$modelValue);
+                };
+                
+                scope.setViewValue = function(modelData){
+                    ngModelCtrl.$setViewValue(modelData);
+                    ngModelCtrl.$render();
+                }
             }
         }
     }
