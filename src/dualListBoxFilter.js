@@ -8,5 +8,5 @@ angular.module('killyosaur.dualListBox').filter('filterBy', ['$filter', function
 		}
 		
 		return $filter('filter')(items, search);
-	}
+	};
 }]);

@@ -56,7 +56,7 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
 
         function updateSourceData(destinationData, sourceData) {
             if (angular.isDefined(sourceData) && angular.isArray(sourceData)) {
-                if (angular.isUndefined(destinationData) || destinationData.length == 0) {
+                if (angular.isUndefined(destinationData) || destinationData.length === 0) {
                     self.sourceData = [];
                     self.sourceData = self.sourceData.concat(sourceData);
                 } else {
@@ -97,7 +97,7 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
 
         self.isControlDisabled = function (standard) {
             return (angular.isUndefined(standard) && controlDisabled()) || (standard || controlDisabled());
-        }
+        };
 
         self.move = function (event) {
             event.preventDefault();

@@ -2,7 +2,7 @@ describe('Controller: dualListBoxController', function(){
     var scope, control, dualListBoxConfig, injected = null;
 
     function fakeController($scope, $attrs, $element){
-        injected = {}
+        injected = {};
         injected.$scope = $scope;
         injected.$attrs = $attrs;
         injected.$element = $element;
@@ -47,7 +47,7 @@ describe('Controller: dualListBoxController', function(){
         expect(control.destinationFilter).toBe("");
         expect(control.destinationFilter).toBe("");
         expect(control.options).toEqual(dualListBoxConfig);
-        expect(control.sourceData).toEqual(scope.source)
+        expect(control.sourceData).toEqual(scope.source);
     });
     
     describe('- no source error:', function(){
@@ -118,8 +118,10 @@ describe('Controller: dualListBoxController', function(){
         });
     });
 
-    describe('- move:', function() {
-        beforeEach(inject(function($rootScope, $compile, $controller) {
+    describe('- move:', function () {
+        var timeout;
+        beforeEach(inject(function ($rootScope, $compile, $controller, $timeout) {
+            timeout = $timeout;
             scope.source = JSC.array(3000, JSC.object({
                 name: JSC.one_of(pickOne())
             }))();
@@ -137,7 +139,7 @@ describe('Controller: dualListBoxController', function(){
             scope.$digest();
         }));
 
-        it('move a set of items to the right with no default set for destination', inject(function($timeout) {
+        it('move a set of items to the right with no default set for destination', function() {
             spyOn(scope, 'setViewValue').and.callThrough();
             
             var sourceSelectedData = [];
@@ -153,8 +155,8 @@ describe('Controller: dualListBoxController', function(){
             control.sourceSelectedData = [].concat(sourceSelectedData);
 
             control.move(strBtn);
-            $timeout.flush();
-            $timeout.verifyNoPendingTasks();
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
             scope.$digest();
 
             expect(scope.source.length).toEqual(3000);
@@ -163,9 +165,9 @@ describe('Controller: dualListBoxController', function(){
             expect(control.destinationData).toEqual(sourceSelectedData);
             expect(control.sourceSelectedData.length).toEqual(0);
             expect(scope.setViewValue).toHaveBeenCalled();
-        }));
+        });
 
-        it('move a set of items to the right with default set for destination', inject(function($timeout) {
+        it('move a set of items to the right with default set for destination', function() {
             spyOn(scope, 'setViewValue').and.callThrough();
             
             control.render([]);
@@ -184,8 +186,8 @@ describe('Controller: dualListBoxController', function(){
             control.sourceSelectedData = [].concat(sourceSelectedData);
 
             control.move(strBtn);
-            $timeout.flush();
-            $timeout.verifyNoPendingTasks();
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
             scope.$digest();
 
             expect(scope.source.length).toEqual(3000);
@@ -194,15 +196,16 @@ describe('Controller: dualListBoxController', function(){
             expect(control.destinationData).toEqual(sourceSelectedData);
             expect(control.sourceSelectedData.length).toEqual(0);
             expect(scope.setViewValue).toHaveBeenCalled();
-        }));
+        });
 
-        it('move a set of items to the right with destination set to a set of items', inject(function($timeout) {
+        it('move a set of items to the right with destination set to a set of items', function() {
             spyOn(scope, 'setViewValue').and.callThrough();
             var oldDestData = [];
+            var value, i;
             var indices = JSC.array(25, JSC.integer(0, 2999))();
 
-            for(var i = 0; i < 25; i++) {
-                var value = scope.source[indices[i]];
+            for(i = 0; i < 25; i++) {
+                value = scope.source[indices[i]];
                 if (oldDestData.indexOf(value) === -1) {
                     oldDestData.push(value);
                 }
@@ -214,7 +217,7 @@ describe('Controller: dualListBoxController', function(){
             var sourceSelectedData = [];
             indices = JSC.array(15, JSC.integer(0, control.sourceData.length - 1))();
 
-            for(var i = 0; i < 15; i++) {
+            for(i = 0; i < 15; i++) {
                 value = control.sourceData[indices[i]];
                 if (sourceSelectedData.indexOf(value) === -1) {
                     sourceSelectedData.push(value);
@@ -224,8 +227,8 @@ describe('Controller: dualListBoxController', function(){
             control.sourceSelectedData = [].concat(sourceSelectedData);
 
             control.move(strBtn);
-            $timeout.flush();
-            $timeout.verifyNoPendingTasks();
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
             scope.$digest();
 
             expect(scope.source.length).toEqual(3000);
@@ -234,9 +237,9 @@ describe('Controller: dualListBoxController', function(){
             expect(control.destinationData).toEqual(oldDestData.concat(sourceSelectedData));
             expect(control.sourceSelectedData.length).toEqual(0);
             expect(scope.setViewValue).toHaveBeenCalled();
-        }));
+        });
 
-        it('move a set of items to the right with default set for destination and filtered source', inject(function($timeout, filterByFilter) {
+        it('move a set of items to the right with default set for destination and filtered source', inject(function(filterByFilter) {
             spyOn(scope, 'setViewValue').and.callThrough();
 
             control.render([]);
@@ -257,8 +260,8 @@ describe('Controller: dualListBoxController', function(){
             control.sourceSelectedData = [].concat(sourceSelectedData);
 
             control.move(strBtn);
-            $timeout.flush();
-            $timeout.verifyNoPendingTasks();
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
             scope.$digest();
 
             expect(scope.source.length).toEqual(3000);
@@ -269,13 +272,14 @@ describe('Controller: dualListBoxController', function(){
             expect(scope.setViewValue).toHaveBeenCalled();
         }));
 
-        it('move a set of items to the right with destination set to a set of items and filtered source', inject(function($timeout, filterByFilter) {
+        it('move a set of items to the right with destination set to a set of items and filtered source', inject(function(filterByFilter) {
             spyOn(scope, 'setViewValue').and.callThrough();
+            var value, i;
             var oldDestData = [];
             var indices = JSC.array(25, JSC.integer(0, 2999))();
 
-            for(var i = 0; i < 25; i++) {
-                var value = scope.source[indices[i]];
+            for(i = 0; i < 25; i++) {
+                value = scope.source[indices[i]];
                 if (oldDestData.indexOf(value) === -1) {
                     oldDestData.push(value);
                 }
@@ -291,7 +295,7 @@ describe('Controller: dualListBoxController', function(){
             var sourceSelectedData = [];
             indices = JSC.array(5, JSC.integer(0, control.sourceFiltered.length - 1))();
 
-            for(var i = 0; i < 5; i++) {
+            for(i = 0; i < 5; i++) {
                 value = control.sourceFiltered[indices[i]];
                 if (sourceSelectedData.indexOf(value) === -1) {
                     sourceSelectedData.push(value);
@@ -301,8 +305,8 @@ describe('Controller: dualListBoxController', function(){
             control.sourceSelectedData = [].concat(sourceSelectedData);
 
             control.move(strBtn);
-            $timeout.flush();
-            $timeout.verifyNoPendingTasks();
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
             scope.$digest();
 
             expect(scope.source.length).toEqual(3000);
@@ -310,6 +314,47 @@ describe('Controller: dualListBoxController', function(){
             expect(control.destinationData.length).toEqual(oldDestData.length + sourceSelectedData.length);
             expect(control.destinationData).toEqual(oldDestData.concat(sourceSelectedData));
             expect(control.sourceSelectedData.length).toEqual(0);
+            expect(scope.setViewValue).toHaveBeenCalled();
+        }));
+
+        it('move all items to the right with default set for destination', inject(function (filterByFilter) {
+            spyOn(scope, 'setViewValue').and.callThrough();
+
+            control.render([]);
+            control.sourceFiltered = filterByFilter(control.sourceData, control.sourceFilter, control.options.text);
+            control.destinationFiltered = filterByFilter(control.destinationData, control.destinationFilter, control.options.text);            scope.$digest();
+            scope.$digest();
+
+            expect(control.sourceFiltered.length).toEqual(3000);
+
+            control.move(atrBtn);
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
+            scope.$digest();
+
+            expect(scope.source.length).toEqual(3000);
+            expect(control.sourceData.length).toEqual(0);
+            expect(control.destinationData.length).toEqual(3000);
+            expect(control.destinationData).toEqual(scope.source);
+            expect(scope.setViewValue).toHaveBeenCalled();
+        }));
+
+        xit('move all filtered items to the right with default set for destination', inject(function (filterByFilter) {
+            spyOn(scope, 'setViewValue').and.callThrough();
+
+            control.render([]);
+            control.sourceFiltered = filterByFilter(control.sourceData, control.sourceFilter, control.options.text);
+            scope.$digest();
+            
+            control.move(atrBtn);
+            timeout.flush();
+            timeout.verifyNoPendingTasks();
+            scope.$digest();
+
+            expect(scope.source.length).toEqual(3000);
+            expect(control.sourceData.length).toEqual(0);
+            expect(control.destinationData.length).toEqual(3000);
+            expect(control.destinationData).toEqual(scope.source);
             expect(scope.setViewValue).toHaveBeenCalled();
         }));
     });

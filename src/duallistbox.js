@@ -17,7 +17,8 @@ angular.module('killyosaur.dualListBox').directive('dualListBox', [
                 scope.selectionBoxStyle = {
                     width: '100%',
                     height: '200px'
-                }
+                };
+
                 if (angular.isDefined(attributes.height)) {
                     scope.selectionBoxStyle.height = attributes.height;
                 }
@@ -25,19 +26,19 @@ angular.module('killyosaur.dualListBox').directive('dualListBox', [
                 ngModelCtrl.$viewChangeListeners.push(function () {
                     scope.$eval(attributes.ngChange);
                 });
-    
+
                 var modelLength = ngModelCtrl.$modelValue.length;
                 duallistboxCtrl.destinationData = new Array(modelLength);
 
                 ngModelCtrl.$render = function(){
                     duallistboxCtrl.render(ngModelCtrl.$modelValue);
                 };
-                
+
                 scope.setViewValue = function(modelData){
                     ngModelCtrl.$setViewValue(modelData);
                     ngModelCtrl.$render();
-                }
+                };
             }
-        }
+        };
     }
 ]);

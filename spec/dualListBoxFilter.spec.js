@@ -1,9 +1,9 @@
 describe('Filter: filterBy', function(){
     var filterByFilter;
     var list;
-   
+
     beforeEach(module('killyosaur.dualListBox'));
-   
+
     beforeEach(inject(function(_filterByFilter_){
         filterByFilter = _filterByFilter_;
         list = [
@@ -39,7 +39,7 @@ describe('Filter: filterBy', function(){
             },
         ]
     }));
-   
+
     it('should be able to search a value', function(){
         var result = filterByFilter(list, 'test');
         expect(result.length).toEqual(4);

@@ -1,6 +1,7 @@
 module.exports = function(config) {
     config.set({
-        browsers: ['PhantomJS'],
+        //browsers: ['PhantomJS'],
+        browsers: ['Chrome'],
         frameworks: ['jasmine'],
         files: [
             'bower_components/angular/angular.min.js',
@@ -13,7 +14,7 @@ module.exports = function(config) {
         ],
         
         reporters: ['progress', 'coverage'],
-        exclude: [],
+        exclude: ['spec/jasmineBoot.js'],
         preprocessors: {
             'src/**/*.js': ['coverage']
         },
@@ -26,7 +27,8 @@ module.exports = function(config) {
                 {type: 'text-summary'}
             ]
         },
-        
+        singleRun: true,
+        logLevel: config.LOG_DEBUG,
         colors: true
     });
 };

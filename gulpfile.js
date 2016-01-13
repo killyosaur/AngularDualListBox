@@ -8,7 +8,7 @@ var footer = require('gulp-footer');
 var jshint = require('gulp-jshint');
 var cached = require('gulp-cached');
 var remember = require('gulp-remember');
-var minifyHtml = require('gulp-minify-html');
+var minifyHtml = require('gulp-htmlmin');
 var angularTemplatecache = require('gulp-angular-templatecache');
 var pkg = require('./package.json');
 var del = require('del');
@@ -45,7 +45,7 @@ gulp.task('clean-dest', function() {
 	return del([DEST + '*']);
 });
 
-gulp.task('default', ['scripts'], function(){
+gulp.task('default', ['scripts'], function() {
 	return gulp.src(TEMP + '*.js')
 		.pipe(concat('angular.duallistbox.js'))
 		.pipe(header(banner + '\n(function() {\n', { pkg: pkg }))
@@ -57,8 +57,8 @@ gulp.task('default', ['scripts'], function(){
 		.pipe(gulp.dest(DEST));
 });
 
-gulp.task('addpkg', ['scripts'], function(){
-	gutil.log('Adding new script now.')
+gulp.task('addpkg', ['scripts'], function() {
+	gutil.log('Adding new script now.');
 	return addPkg();
 });
 
@@ -69,7 +69,7 @@ gulp.task('watch', function(){
 			delete cached.caches.scripts[event.path];
 			remember.forget('scripts', event.path);
 		}
-	})
+	});
 });
 
 gulp.task('templatecache', function() {
@@ -112,6 +112,16 @@ gulp.task('serve', ['addpkg', 'watch'], function(){
 	});
 	
 	gulp.watch(['*.html', 'scripts/**/*.js'], {cwd: 'app'}, reload);
+});
+
+gulp.task('specRunner', ['templatecache', 'watch'], function(){
+	browserSync({
+		server: {
+			baseDir: ''
+		}
+	});
+	
+	gulp.watch(['*.html', 'src/**/*.js'], {cwd: 'app'}, reload);
 });
 
 function addPkg(){
