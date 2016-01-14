@@ -39,80 +39,80 @@ gulp.task('test', ['templatecache'], function(done) {
 });
 
 gulp.task('clean-temp', function() {
-	return del([TEMP + '*']);
+    return del([TEMP + '*']);
 });
 
 gulp.task('clean-dest', function() {
-	return del([DEST + '*']);
+    return del([DEST + '*']);
 });
 
 gulp.task('default', ['scripts'], function() {
-	return gulp.src(TEMP + '*.js')
-		.pipe(concat('angular.duallistbox.js'))
-		.pipe(header(banner + '\n(function() {\n', { pkg: pkg }))
-		.pipe(footer('\n})();'))
-		.pipe(gulp.dest(DEST))
-		.pipe(uglify())
-		.pipe(rename({ extname: '.min.js' }))
-		.pipe(header(banner, { pkg: pkg }))
-		.pipe(gulp.dest(DEST));
+    return gulp.src(TEMP + '*.js')
+        .pipe(concat('angular.duallistbox.js'))
+        .pipe(header(banner + '\n(function() {\n', { pkg: pkg }))
+        .pipe(footer('\n})();'))
+        .pipe(gulp.dest(DEST))
+        .pipe(uglify())
+        .pipe(rename({ extname: '.min.js' }))
+        .pipe(header(banner, { pkg: pkg }))
+        .pipe(gulp.dest(DEST));
 });
 
 gulp.task('addpkg', ['scripts'], function() {
-	gutil.log('Adding new script now.');
-	return addPkg();
+    gutil.log('Adding new script now.');
+    return addPkg();
 });
 
 gulp.task('watch', function(){
-	var watcher = gulp.watch(SRC, ['addpkg']);
-	watcher.on('change', function(event) {
-		if (event.type === 'deleted') {
-			delete cached.caches.scripts[event.path];
-			remember.forget('scripts', event.path);
-		}
-	});
+    var watcher = gulp.watch(SRC, ['addpkg']);
+    watcher.on('change', function(event) {
+        if (event.type === 'deleted') {
+            delete cached.caches.scripts[event.path];
+            remember.forget('scripts', event.path);
+        }
+    });
 });
 
 gulp.task('templatecache', function() {
-	return gulp
-		.src('src/*.html')
-		.pipe(minifyHtml({empty: true}))
-		.pipe(angularTemplatecache(
-			'templates.js',
-			{
-				module: 'killyosaur.dualListBox',
-				root: 'templates/',
-				standalone: false,
-				transformUrl: function(url) {
-					return url.replace(/\.html$/, '');
-				}
-			}
-		))
-		.pipe(gulp.dest(TEMP));
+    return gulp
+        .src('src/*.html')
+        .pipe(minifyHtml({empty: true}))
+        .pipe(angularTemplatecache(
+            'templates.js',
+            {
+                module: 'killyosaur.dualListBox',
+                root: 'templates/',
+                standalone: false,
+                transformUrl: function(url) {
+                    return url.replace(/\.html$/, '');
+                }
+            }
+        ))
+        .pipe(gulp.dest(TEMP));
 });
 
 gulp.task('scripts', ['clean-temp', 'clean-dest', 'templatecache'], function(){
-	return gulp.src(SRC)
-		.pipe(cached('scripts'))
-		.pipe(jshint())
-		.pipe(remember())
-		.pipe(concat('angular.duallistbox.js', 
-		   ['app.js',
-			'duallistbox.js',
-			'duallistboxConfig.js',
-			'duallistboxController.js',
-			'templates.js']))
-		.pipe(gulp.dest(TEMP));
+    return gulp.src(SRC)
+        .pipe(cached('scripts'))
+        .pipe(jshint())
+        .pipe(remember())
+        .pipe(concat('angular.duallistbox.js', 
+           ['app.js',
+            'duallistbox.js',
+            'duallistboxConfig.js',
+            'duallistboxController.js',
+            'templates.js']))
+        .pipe(gulp.dest(TEMP));
 });
 
 gulp.task('serve', ['addpkg', 'watch'], function(){
-	browserSync({
-		server: {
-			baseDir: 'app'
-		}
-	});
-	
-	gulp.watch(['*.html', 'scripts/**/*.js'], {cwd: 'app'}, reload);
+    browserSync({
+        server: {
+            baseDir: 'app'
+        }
+    });
+    
+    gulp.watch(['*.html', 'scripts/**/*.js'], {cwd: 'app'}, reload);
 });
 
 gulp.task('jasmine', ['templatecache', 'watch'], function () {
@@ -121,7 +121,7 @@ gulp.task('jasmine', ['templatecache', 'watch'], function () {
         'bower_components/angular-mocks/angular-mocks.js',
         'bower_components/JSCheck/jscheck.js',
         'src/**/*.js',
-        '.tmp/*.js',
+        '.tmp/templates.js',
         'spec/helpers/*.js',
         'spec/*.js'
     ];
@@ -130,11 +130,11 @@ gulp.task('jasmine', ['templatecache', 'watch'], function () {
         .pipe(jasmineBrowser.specRunner())
         .pipe(jasmineBrowser.server({ port: 8888 }));
 
-    gulp.watch(files, { cwd: 'spec' }, reload);
+    return gulp.watch(files, { }, reload);
 
 });
 
 function addPkg(){
-	return gulp.src(TEMP + '*.js')
-		.pipe(gulp.dest(APP));
+    return gulp.src(TEMP + '*.js')
+        .pipe(gulp.dest(APP));
 }

@@ -27,11 +27,9 @@
     <Content Include="app\index.html" />
     <Compile Include="dist\angular.duallistbox.js" />
     <Compile Include="dist\angular.duallistbox.min.js" />
-    <Content Include="spec\index.html" />
     <Compile Include="spec\duallistbox.spec.js" />
     <Compile Include="spec\dualListBoxController.spec.js" />
     <Compile Include="spec\dualListBoxFilter.spec.js" />
-    <Compile Include="spec\jasmineBoot.js" />
     <Content Include="src\duallistboxes.html" />
     <Compile Include="src\app.js" />
     <Compile Include="src\duallistbox.js" />

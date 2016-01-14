@@ -1,14 +1,14 @@
 module.exports = function(config) {
     config.set({
-        //browsers: ['PhantomJS'],
-        browsers: ['Chrome'],
+        browsers: ['PhantomJS'],
+        //browsers: ['Chrome'],
         frameworks: ['jasmine'],
         files: [
             'bower_components/angular/angular.min.js',
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/JSCheck/jscheck.js',
             'src/**/*.js',
-            '.tmp/*.js',
+            '.tmp/templates.js',
             'spec/helpers/*.js',
             'spec/*.js'
         ],
@@ -28,7 +28,7 @@ module.exports = function(config) {
             ]
         },
         singleRun: true,
-        logLevel: config.LOG_DEBUG,
+        //logLevel: config.LOG_DEBUG,
         colors: true
     });
 };

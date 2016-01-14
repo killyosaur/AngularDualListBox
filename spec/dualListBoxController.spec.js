@@ -32,12 +32,12 @@ describe('Controller: dualListBoxController', function (){
         injected.$element = $element;
     }
     
-    function removeSelectItems(dataSet, selectItems) {
+    function removeSelectItems(dataSet, selectItems, key) {
         var result = [];
         for (var i = 0; i < dataSet.length; i++) {
             var remove = false;
             for (var j = 0; j < selectItems.length; j++) {
-                if (dataSet[i] === selectItems[j]) {
+                if (dataSet[i][key] === selectItems[j][key]) {
                     remove = true;
                     break;
                 }
@@ -64,6 +64,8 @@ describe('Controller: dualListBoxController', function (){
                 data.push(arr[key]);
             }
         }
+
+        return data;
     }
 
     beforeEach(module('killyosaur.dualListBox'));
@@ -122,6 +124,7 @@ describe('Controller: dualListBoxController', function (){
                 control = $controller('dualListBoxController', { 
                     $scope: scope,
                     $attrs: injected.$attrs,
+                    $window: $window,
                     dualListBoxConfig: dualListBoxConfig
                 });
 
@@ -137,6 +140,7 @@ describe('Controller: dualListBoxController', function (){
             control = $controller('dualListBoxController', { 
                 $scope: scope,
                 $attrs: injected.$attrs,
+                $window: $window,
                 dualListBoxConfig: dualListBoxConfig
             });
 
@@ -571,22 +575,56 @@ describe('Controller: dualListBoxController', function (){
         describe('set to the left', function () {
             var destinationData;
 
-            beforeEach(function () {
+            //beforeEach(function () {
+            //    btn = stlBtn;
+
+            //    var indices = JSC.array(500, JSC.integer(0, 2999))();
+            //    destinationData = [];
+
+            //    for (var i = 0; i < 500; i++) {
+            //        var value = scope.source[indices[i]];
+            //        if (destinationData.indexOf(value) === -1) {
+            //            destinationData.push(value);
+            //        }
+            //    }
+
+            //    control.render(destinationData);
+            //    scope.$digest();
+            //});
+            
+            beforeEach(inject(function ($rootScope, $compile, $controller, $timeout) {
                 btn = stlBtn;
 
-                var indices = JSC.array(500, JSC.integer(0, 2999))();
+                scope.source = JSC.array(20, JSC.object({
+                    name: JSC.one_of(pickOne())
+                }))();
+                
+                for (var i = 0; i < scope.source.length; i++) {
+                    scope.source[i].id = i + 1;
+                }
+                
+                control = $controller('dualListBoxController', {
+                    $scope: scope,
+                    $attrs: injected.$attrs,
+                    $window: $window,
+                    dualListBoxConfig: dualListBoxConfig
+                });
+                scope.$digest();
+                
+                var indices = JSC.array(10, JSC.integer(0, 19))();
+                
                 destinationData = [];
-
-                for (var i = 0; i < 500; i++) {
+                
+                for (var i = 0; i < indices.length; i++) {
                     var value = scope.source[indices[i]];
                     if (destinationData.indexOf(value) === -1) {
                         destinationData.push(value);
                     }
                 }
-
+                
                 control.render(destinationData);
                 scope.$digest();
-            });
+            }));
             
             it('should move empty destination set', function () {
                 spyOn(scope, 'setViewValue').and.callThrough();
@@ -601,8 +639,8 @@ describe('Controller: dualListBoxController', function (){
                 timeout.verifyNoPendingTasks();
                 scope.$digest();
                 
-                expect(scope.source.length).toEqual(3000);
-                expect(control.sourceData.length).toEqual(3000);
+                expect(scope.source.length).toEqual(20);
+                expect(control.sourceData.length).toEqual(20);
                 expect(control.destinationData.length).toEqual(0);
                 expect(scope.setViewValue).toHaveBeenCalledWith([]);
             });
@@ -610,14 +648,15 @@ describe('Controller: dualListBoxController', function (){
             it('should move set to source', function () {
                 spyOn(scope, 'setViewValue').and.callThrough();
                 
-                var destinationSelectedData = JSC.array(25, JSC.one_of(control.destinationData))();
+                var destinationSelectedData = JSC.array(5, JSC.one_of(control.destinationData))();
 
-                removeDups(destinationSelectedData, 'id');
+                destinationSelectedData = removeDups(destinationSelectedData, 'id');
 
                 control.destinationSelectedData = [].concat(destinationSelectedData);
                 var sourceData = [].concat(control.sourceData);
-
-                var expectedDestinationData = removeSelectItems(control.destinationData, destinationSelectedData);
+                
+                var expectedDestinationData = removeSelectItems(control.destinationData, destinationSelectedData, 'id');
+                var expectedSourceData = removeSelectItems(scope.source, expectedDestinationData, 'id');
                 expect(control.sourceData.length).toEqual(scope.source.length - destinationData.length);
                 
                 control.move(btn);
@@ -625,11 +664,11 @@ describe('Controller: dualListBoxController', function (){
                 timeout.verifyNoPendingTasks();
                 scope.$digest();
                 
-                expect(scope.source.length).toEqual(3000);
-                expect(control.sourceData.length).toEqual(sourceData.length + destinationSelectedData.length);
+                expect(scope.source.length).toEqual(20);
+                expect(control.sourceData).toEqual(expectedSourceData);
+                expect(control.sourceData.length).toEqual(expectedSourceData.length);
                 expect(control.destinationData.length).toEqual(expectedDestinationData.length);
                 expect(control.destinationData).toEqual(expectedDestinationData);
-                expect(control.sourceData).toEqual(sourceData.concat(destinationSelectedData));
                 expect(control.destinationSelectedData.length).toEqual(0);
                 expect(scope.setViewValue).toHaveBeenCalledWith(expectedDestinationData);
             });

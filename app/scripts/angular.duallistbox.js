@@ -77,24 +77,24 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
             return dataToReturn;
         }
 
-        function grep(elems, callback, inv) {
-            var retVal,
-                ret = [],
-                ii = 0,
-                length = elems.length;
-            inv = !!inv;
+        //function grep(elems, callback, inv) {
+        //    var retVal,
+        //        ret = [],
+        //        ii = 0,
+        //        length = elems.length;
+        //    inv = !!inv;
 
-            // Go through the array, only saving the items
-            // that pass the validator function
-            for ( ; ii < length; ii++ ) {
-                retVal = !!callback( elems[ ii ], ii );
-                if ( inv !== retVal ) {
-                    ret.push( elems[ ii ] );
-                }
-            }
+        //    // Go through the array, only saving the items
+        //    // that pass the validator function
+        //    for ( ; ii < length; ii++ ) {
+        //        retVal = !!callback( elems[ ii ], ii );
+        //        if ( inv !== retVal ) {
+        //            ret.push( elems[ ii ] );
+        //        }
+        //    }
 
-            return ret;
-        }
+        //    return ret;
+        //}
 
         function controlDisabled() {
             return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
@@ -132,9 +132,10 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
                     self.sourceData = [];
                     self.sourceData = self.sourceData.concat(sourceData);
                 } else {
-                    self.sourceData = grep(sourceData, function(datum) {
-                        return getIndex(destinationData, datum) === -1;
-                    });
+                    self.sourceData = removeData(sourceData, destinationData);
+                    //grep(sourceData, function (datum) {
+                    //    return getIndex(destinationData, datum) === -1;
+                    //});
                 }
             } else {
                 throw 'No valid data source available!';
