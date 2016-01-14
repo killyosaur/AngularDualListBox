@@ -7,8 +7,7 @@
 (function() {
 angular.module('killyosaur.dualListBox', []);
 angular.module('killyosaur.dualListBox').directive('dualListBox', [
-    'dualListBoxConfig',
-    function (dualListBoxConfig) {
+    function () {
         return {
             restrict: 'AE',
             require: ['^ngModel', '^dualListBox'],
@@ -128,8 +127,7 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
 
         function getIndex(data, item) {
             var ind = 0, length = data.length;
-            if (!data || data.length === 0) return -1;
-            
+
             if (item.hasOwnProperty(self.options.value)) {
                 for (; ind < length; ind++) {
                     if (data[ind][self.options.value] === item[self.options.value]) {
