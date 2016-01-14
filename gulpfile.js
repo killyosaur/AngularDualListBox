@@ -9,6 +9,7 @@ var jshint = require('gulp-jshint');
 var cached = require('gulp-cached');
 var remember = require('gulp-remember');
 var minifyHtml = require('gulp-htmlmin');
+var jasmineBrowser = require('gulp-jasmine-browser');
 var angularTemplatecache = require('gulp-angular-templatecache');
 var pkg = require('./package.json');
 var del = require('del');
@@ -114,14 +115,23 @@ gulp.task('serve', ['addpkg', 'watch'], function(){
 	gulp.watch(['*.html', 'scripts/**/*.js'], {cwd: 'app'}, reload);
 });
 
-gulp.task('specRunner', ['templatecache', 'watch'], function(){
-	browserSync({
-		server: {
-			baseDir: ''
-		}
-	});
-	
-	gulp.watch(['*.html', 'src/**/*.js'], {cwd: 'app'}, reload);
+gulp.task('jasmine', ['templatecache', 'watch'], function () {
+    var files = [
+        'bower_components/angular/angular.min.js',
+        'bower_components/angular-mocks/angular-mocks.js',
+        'bower_components/JSCheck/jscheck.js',
+        'src/**/*.js',
+        '.tmp/*.js',
+        'spec/helpers/*.js',
+        'spec/*.js'
+    ];
+
+    gulp.src(files)
+        .pipe(jasmineBrowser.specRunner())
+        .pipe(jasmineBrowser.server({ port: 8888 }));
+
+    gulp.watch(files, { cwd: 'spec' }, reload);
+
 });
 
 function addPkg(){
