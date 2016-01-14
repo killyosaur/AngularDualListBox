@@ -1,6 +1,6 @@
 {
   "name": "AngularDualListBox",
-  "version": "0.0.17",
+  "version": "1.0.0",
   "description": "A dual selector box in the vein of the efficient dual list box built with jquery",
   "main": "index.html",
   "scripts": {
