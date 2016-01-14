@@ -1,4 +1,3 @@
-/// <references path="../bower_components/angular/angular.js" />
 angular.module('killyosaur.dualListBox', []);
 angular.module('killyosaur.dualListBox').directive('dualListBox', [
     'dualListBoxConfig',
@@ -77,25 +76,6 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
             return dataToReturn;
         }
 
-        //function grep(elems, callback, inv) {
-        //    var retVal,
-        //        ret = [],
-        //        ii = 0,
-        //        length = elems.length;
-        //    inv = !!inv;
-
-        //    // Go through the array, only saving the items
-        //    // that pass the validator function
-        //    for ( ; ii < length; ii++ ) {
-        //        retVal = !!callback( elems[ ii ], ii );
-        //        if ( inv !== retVal ) {
-        //            ret.push( elems[ ii ] );
-        //        }
-        //    }
-
-        //    return ret;
-        //}
-
         function controlDisabled() {
             return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
         }
@@ -133,9 +113,6 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
                     self.sourceData = self.sourceData.concat(sourceData);
                 } else {
                     self.sourceData = removeData(sourceData, destinationData);
-                    //grep(sourceData, function (datum) {
-                    //    return getIndex(destinationData, datum) === -1;
-                    //});
                 }
             } else {
                 throw 'No valid data source available!';
@@ -144,8 +121,7 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
 
         function getIndex(data, item) {
             var ind = 0, length = data.length;
-            if (!data || data.length === 0) return -1;
-            
+
             if (item.hasOwnProperty(self.options.value)) {
                 for (; ind < length; ind++) {
                     if (data[ind][self.options.value] === item[self.options.value]) {
@@ -199,10 +175,6 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
                         (self.destinationFiltered.length >= self.options.maxAllBtn &&
                         $window.confirm(self.options.warning) ||
                         self.destinationFiltered.length < self.options.maxAllBtn)) {
-                        //angular.forEach(self.destinationFiltered, function(datum) {
-                        //    var index = getIndex(modelData, datum);
-                        //    modelData.splice(index, 1);
-                            //});
                         modelData = removeData(self.destinationData, self.destinationFiltered);
                         if (self.destinationSelectedData) {
                             self.destinationSelectedData.length = 0;
@@ -214,10 +186,6 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
                     self.sourceSelectedData.length = 0;
                     break;
                 case 'stl':
-                    //angular.forEach(self.destinationSelectedData, function(datum) {
-                    //    var index = getIndex(self.destinationData, datum);
-                    //    modelData.splice(index, 1);
-                        //});
                     modelData = removeData(self.destinationData, self.destinationSelectedData);
                     self.destinationSelectedData.length = 0;
                     break;

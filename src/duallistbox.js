@@ -1,6 +1,5 @@
 angular.module('killyosaur.dualListBox').directive('dualListBox', [
-    'dualListBoxConfig',
-    function (dualListBoxConfig) {
+    function () {
         return {
             restrict: 'AE',
             require: ['^ngModel', '^dualListBox'],

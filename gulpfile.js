@@ -58,7 +58,7 @@ gulp.task('default', ['scripts'], function() {
         .pipe(gulp.dest(DEST));
 });
 
-gulp.task('addpkg', ['scripts'], function() {
+gulp.task('addpkg', ['default'], function() {
     gutil.log('Adding new script now.');
     return addPkg();
 });

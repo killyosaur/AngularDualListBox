@@ -29,6 +29,10 @@ module.exports = function(config) {
         },
         singleRun: true,
         //logLevel: config.LOG_DEBUG,
-        colors: true
+        colors: true,
+        browserDisconnectTolerance: 5,
+        browserDisconnectTimeout: 30000,
+        captureTimeout: 100000,
+        browserNoActivityTimeout: 60000
     });
 };
