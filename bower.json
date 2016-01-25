@@ -21,7 +21,9 @@
     "bower_components",
     "test",
     "tests",
-    "spec"
+    "spec",
+    "AngularDualListBox.njsproj",
+    "angularduallistbox.sln"
   ],
   "dependencies": {
     "angular": "~1.4.8"
