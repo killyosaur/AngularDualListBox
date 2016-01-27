@@ -20,49 +20,6 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
             return dataToReturn;
         }
 
-        function controlDisabled() {
-            return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
-        }
-
-        //model -> UI
-        self.render = function (modelValue) {
-            self.destinationData = modelValue;
-        };
-
-        self.sourceFilter = "";
-        self.destinationFilter = "";
-        self.sourceData = [];
-        self.options = {};
-        for (var i in dualListBoxConfig) {
-            if (dualListBoxConfig.hasOwnProperty(i)) {
-                self.options[i] = angular.isDefined($attrs[i]) ?
-                    angular.isString(dualListBoxConfig[i]) ?
-                    $attrs[i] : $scope.$parent.$eval($attrs[i])
-                    : dualListBoxConfig[i];
-            }
-        }
-
-        $attrs.$observe("disabled", function(disabled) {
-            ngdisabled = disabled;
-        });
-
-        $scope.$watchGroup([function() { return self.destinationData; }, function() { return $scope.source; }], function (newData) {
-            updateSourceData(newData[0], newData[1]);
-        });
-
-        function updateSourceData(destinationData, sourceData) {
-            if (angular.isDefined(sourceData) && angular.isArray(sourceData)) {
-                if (angular.isUndefined(destinationData) || destinationData.length === 0) {
-                    self.sourceData = [];
-                    self.sourceData = self.sourceData.concat(sourceData);
-                } else {
-                    self.sourceData = removeData(sourceData, destinationData);
-                }
-            } else {
-                throw 'No valid data source available!';
-            }
-        }
-
         function getIndex(data, item) {
             var ind = 0, length = data.length;
 
@@ -86,6 +43,45 @@ angular.module('killyosaur.dualListBox').controller('dualListBoxController', [
                 }
             }
             return -1;
+        }
+
+        function controlDisabled() {
+            return (angular.isDefined($scope.controlDisabled) && $scope.controlDisabled()) || ngdisabled;
+        }
+
+        //model -> UI
+        self.render = function (modelValue) {
+            self.destinationData = modelValue;
+            updateSourceData(modelValue, $scope.source);
+        };
+
+        self.sourceFilter = "";
+        self.destinationFilter = "";
+
+        self.options = {};
+        for (var i in dualListBoxConfig) {
+            if (dualListBoxConfig.hasOwnProperty(i)) {
+                self.options[i] = angular.isDefined($attrs[i]) ?
+                    angular.isString(dualListBoxConfig[i]) ?
+                    $attrs[i] : $scope.$parent.$eval($attrs[i])
+                    : dualListBoxConfig[i];
+            }
+        }
+
+        $attrs.$observe("disabled", function(disabled) {
+            ngdisabled = disabled;
+        });
+
+        function updateSourceData(destinationData, sourceData) {
+            if (angular.isDefined(sourceData) && angular.isArray(sourceData)) {
+                if (angular.isUndefined(destinationData) || destinationData.length === 0) {
+                    self.sourceData = [].concat(sourceData);
+                } else {
+                    self.sourceData = removeData(sourceData, destinationData);
+                }
+            } else {
+                throw 'No valid data source available!';
+            }
         }
 
         self.isControlDisabled = function (standard) {

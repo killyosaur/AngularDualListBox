@@ -1,6 +1,6 @@
 angular.module('killyosaur.dualListBox').constant('dualListBoxConfig', {
     text: 'name',                       // Text that is assigned to the option field.
-    value: 'id',                          // Optional Value field, will create a standard list box by value.
+    value: 'id',                        // Optional Value field, will create a standard list box by value.
     sourceTitle: 'Available Items',     // Title of the source list of the dual list box.
     destinationTitle: 'Selected Items', // Title of the destination list of the dual list box.
     timeout: 500,                       // Timeout for when a filter search is started.

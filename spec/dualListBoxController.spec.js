@@ -103,6 +103,7 @@ describe('Controller: dualListBoxController', function() {
             dualListBoxConfig: dualListBoxConfig
         });
 
+        control.render([]);
         scope.$digest();
     }));
 
@@ -128,6 +129,7 @@ describe('Controller: dualListBoxController', function() {
                     dualListBoxConfig: dualListBoxConfig
                 });
 
+                control.render([]);
                 scope.$digest();
             }).toThrow('No valid data source available!');
         }));
